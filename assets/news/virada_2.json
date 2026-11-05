@@ -1,0 +1,37 @@
+{
+  "clock": "20/11  23:58",
+  "bug": "PLANTÃO ESPECIAL",
+  "segments": [
+    {
+      "seconds": 6.0,
+      "shot": "studio",
+      "who": "JAIRO TROVÃO",
+      "headline": "ATENTADO NA ILHA FISCAL: CASTELAR SOBREVIVE A ATAQUE DO FANTASMA",
+      "caption": "O CANDIDATO DISCURSAVA NO BAILE BENEFICENTE QUANDO O FANTASMA DA LAPA INVADIU O PALÁCIO."
+    },
+    {
+      "seconds": 5.5,
+      "shot": "studio",
+      "who": "JAIRO TROVÃO",
+      "when": "civilians",
+      "headline": "FANTASMA MATA CONVIDADOS E GARÇONS",
+      "caption": "A POLÍCIA CONTA INOCENTES ENTRE AS VÍTIMAS DO BAILE E DO LEILÃO NA LAGOA."
+    },
+    {
+      "seconds": 5.5,
+      "shot": "studio",
+      "who": "JAIRO TROVÃO",
+      "when": "clean",
+      "headline": "GARÇONS ESCAPAM ILESOS, DIZ A GUARDIÃO",
+      "caption": "SÓ A SEGURANÇA DO EVENTO FOI ATINGIDA. NENHUM CONVIDADO FICOU PARA DEPOR."
+    },
+    {
+      "seconds": 7.0,
+      "shot": "press",
+      "who": "ÁLVARO CASTELAR — CANDIDATO AO GOVERNO",
+      "headline": "CASTELAR: \"CASA LIMPA COMEÇA NO DIA 1\"",
+      "caption": "NINGUÉM VAI ME TIRAR DESSA ELEIÇÃO. NEM VIVO, NEM MORTO."
+    }
+  ],
+  "ticker": "TSE MANTÉM ELEIÇÃO SUPLEMENTAR EM 13/12   •   GUARDIÃO SEGURANÇA VAI REFORÇAR POLICIAMENTO   •   ILHA FISCAL FECHADA PARA PERÍCIA   •   "
+}

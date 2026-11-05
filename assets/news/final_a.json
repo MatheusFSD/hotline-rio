@@ -1,0 +1,11 @@
+{
+  "clock": "13/12  00:20",
+  "bug": "AO VIVO  —  PRAÇA MAUÁ",
+  "segments": [
+    {"seconds": 6.5, "shot": "studio", "who": "JAIRO TROVÃO", "headline": "OLHA O CHÃO, MINHA GENTE! OLHA A SOMBRA!", "caption": "SEM ROTEIRO, AO VIVO: NO HELIPONTO DO EDIFÍCIO MARQUÊS, O CORPO DO CANDIDATO NÃO TEM SOMBRA."},
+    {"seconds": 6.0, "shot": "press", "who": "PROVAS EXIBIDAS NO TELÃO DA PRAÇA", "headline": "RETRATO DE 1979, FITAS E CERTIDÃO DE 1977: O MESMO ROSTO", "caption": "A MULTIDÃO OLHA PARA OS PRÓPRIOS PÉS SOB OS POSTES."},
+    {"seconds": 5.5, "shot": "studio", "who": "TEN. ELIAS SOUZA", "when": "souza", "headline": "SOUZA PRENDE CONSELHEIRO DO CONDOMÍNIO NA PRAÇA", "caption": "DESTA VEZ A FITA DE ISOLAMENTO PRENDE UM HOMEM DE TERNO."},
+    {"seconds": 5.5, "shot": "studio", "who": "JAIRO TROVÃO", "when": "bitter", "headline": "FANTASMA SEGUE PROCURADO POR MORTE DE INOCENTES", "caption": "A CIDADE ACREDITA. MAS NÃO PERDOA."}
+  ],
+  "ticker": "TSE SUSPENDE ELEIÇÃO   •   OPERAÇÃO CASA LIMPA ARQUIVADA   •   BAR DO ARCO REABRE NA LAPA   •   "
+}

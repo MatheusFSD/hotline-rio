@@ -1,0 +1,9 @@
+.godot/
+__pycache__/
+*.blend1
+
+# Third-party source packs: not needed to run the game, and they stay out of a public repository.
+# tools/build_characters.py, build_intro.py, build_room.py and character_lineup.py need them to rebuild.
+tools/source/Characters_psx/
+tools/source/room/
+tools/source/hotline_rio_3d.blend

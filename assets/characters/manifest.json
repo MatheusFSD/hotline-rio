@@ -1,0 +1,41 @@
+{
+  "hero": {
+    "vertices": 435,
+    "triangles": 866,
+    "clips": [
+      "Pistol_Idle_Loop",
+      "Walk_Loop",
+      "Jog_Fwd_Loop",
+      "Pistol_Shoot",
+      "Pistol_Reload",
+      "Death01"
+    ],
+    "bones": 65
+  },
+  "enemy_a": {
+    "vertices": 436,
+    "triangles": 868,
+    "clips": [
+      "Pistol_Idle_Loop",
+      "Walk_Loop",
+      "Jog_Fwd_Loop",
+      "Pistol_Shoot",
+      "Pistol_Reload",
+      "Death01"
+    ],
+    "bones": 65
+  },
+  "enemy_b": {
+    "vertices": 450,
+    "triangles": 896,
+    "clips": [
+      "Pistol_Idle_Loop",
+      "Walk_Loop",
+      "Jog_Fwd_Loop",
+      "Pistol_Shoot",
+      "Pistol_Reload",
+      "Death01"
+    ],
+    "bones": 65
+  }
+}

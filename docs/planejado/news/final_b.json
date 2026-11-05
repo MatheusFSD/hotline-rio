@@ -1,0 +1,10 @@
+{
+  "clock": "13/12  06:00",
+  "bug": "PLANTÃO ESPECIAL",
+  "segments": [
+    {"seconds": 6.0, "shot": "studio", "who": "PLANTÃO TELERIO", "headline": "CANDIDATO CASTELAR ASSASSINADO PELO FANTASMA", "caption": "O ATENTADO FOI NA VÉSPERA DA ELEIÇÃO, NO QG DA PRAÇA MAUÁ."},
+    {"seconds": 6.0, "shot": "press", "who": "CONSELHO DA CHAPA ORDEM NA CASA", "headline": "UM NOME DO CONSELHO ASSUME A CHAPA", "caption": "A CASA LIMPA COMEÇA HOJE. EM MEMÓRIA DO ÁLVARO."},
+    {"seconds": 5.0, "shot": "studio", "who": "PLANTÃO TELERIO", "when": "civilians", "headline": "PROCURA-SE: O FANTASMA DA LAPA", "caption": "A POLÍCIA LIGA O FANTASMA A MORTES DE CIVIS EM TRÊS BAIRROS."}
+  ],
+  "ticker": "PROCURA-SE: FANTASMA DA LAPA   •   GUARDIÃO SEGURANÇA ASSUME POLICIAMENTO DO PORTO   •   CENTROS DE TRIAGEM ABREM EM 90 DIAS   •   "
+}

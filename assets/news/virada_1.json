@@ -1,0 +1,21 @@
+{
+  "clock": "02/11  23:10",
+  "bug": "PLANTÃO ESPECIAL",
+  "segments": [
+    {
+      "seconds": 6.0,
+      "shot": "studio",
+      "who": "JAIRO TROVÃO",
+      "headline": "AGIOTA DA LAPA ENCONTRADO MORTO EM OFICINA DE BONDES",
+      "caption": "NESTOR VALADARES, O \"GRAVATA\", FOI ACHADO NA OFICINA DOS BONDES. A POLÍCIA FALA EM ACERTO DE CONTAS."
+    },
+    {
+      "seconds": 7.0,
+      "shot": "press",
+      "who": "ÁLVARO CASTELAR — CANDIDATO AO GOVERNO",
+      "headline": "CASTELAR PROMETE CAÇAR O \"FANTASMA DA LAPA\"",
+      "caption": "EU VOU CAÇAR ESSE FANTASMA E CADA BANDIDO DESSA CIDADE. ORDEM NA CASA."
+    }
+  ],
+  "ticker": "BONDE DE SANTA TERESA VOLTA A CIRCULAR   •   FUNDAÇÃO PILAR ANUNCIA LEILÃO BENEFICENTE   •   ELEIÇÃO SUPLEMENTAR: CASTELAR LIDERA   •   "
+}

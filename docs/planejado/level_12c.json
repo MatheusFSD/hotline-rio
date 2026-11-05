@@ -1,0 +1,36 @@
+{
+  "scene": "res://assets/environment/marques_heliponto.glb",
+  "night": 12, "win_on_clear": true,
+  "briefing": {"place":"12  /  COBERTURA  —  HELIPONTO","title":"ÚLTIMO AR","body":"Aqui ele não tem casca. Só aparece para quem está no Avesso.\nSe encostar em você fora do espectro, entra em você.\nAs luzes de pouso devolvem o fôlego. Um corte. Fim.","tip":"Entre no espectro para vê-lo, chegue perto e solte: o corte de saída acerta antes dele.\nCada luz de pouso devolve fôlego uma vez.","button":"SUBIR AO HELIPONTO  →"},
+  "cleared": "ORDEM NA CASA",
+  "exit_hint": "↑  SAIA PELA ESCADA DE SERVIÇO",
+  "mission": "12  PRAÇA MAUÁ  —  O SÍNDICO",
+  "boss": {"stage":3,"speed":2.4,"touch":0.55,"delay":1.5},
+  "pads": [[-4.0,-3.6],[4.0,-3.6],[-4.0,3.0],[4.0,3.0]],
+  "act_end": {"finale":true,"place":"FIM  /  ORDEM NA CASA","title":"SEM SOMBRA","body":"A casca do Síndico caiu sob as luzes de pouso.\nNo chão, nenhuma sombra. Agora a cidade precisa olhar.","button":"VOLTAR PARA O QUARTO  →"},
+  "lamps": [[[-4.0,0.6,-3.6],"ffcf73",0.8,4.0],[[4.0,0.6,-3.6],"ffcf73",0.8,4.0],[[-4.0,0.6,3.0],"ffcf73",0.8,4.0],[[4.0,0.6,3.0],"ffcf73",0.8,4.0],[[0.0,4.0,0.0],"8fb0ff",0.8,12.0],[[-10.6,2.4,5.6],"f0f6ff",0.8,4.5]],
+  "bounds": [-15.1,-9.1,30.2,19.7],
+  "start": [-10.7,8.875],
+  "entrance": {"path":[[-13.2,9.6]],"hold":0.2,"speed":2.0,"pull_back":1.1},
+  "exit": [9.2,-9.05,2.0,1.25],
+  "solids": [
+    {"r":[-13.25,-7.75,22.65,0.45],"type":"wall","h":2.5},
+    {"r":[11.0,-7.75,2.0,0.45],"type":"wall","h":1.4},
+    {"r":[-13.25,-7.3,0.45,15.0],"type":"wall","h":1.4},
+    {"r":[12.55,-7.3,0.45,15.0],"type":"wall","h":1.4},
+    {"r":[-13.25,-9.1,0.45,1.35],"type":"wall","h":1.4},
+    {"r":[12.55,-9.1,0.45,1.35],"type":"wall","h":1.4},
+    {"r":[-15.1,7.7,3.7,0.45],"type":"wall","h":1.4},
+    {"r":[-10.0,7.7,25.1,0.45],"type":"wall","h":1.4},
+    {"r":[-8.4,3.8,0.4,3.9],"type":"wall","h":1.4},
+    {"r":[-12.8,3.4,1.8,0.4],"type":"wall","h":1.4},
+    {"r":[-9.6,3.4,1.6,0.4],"type":"wall","h":1.4},
+    {"r":[-8.0,-6.4,1.4,2.4],"type":"compressor","h":1.3},
+    {"r":[8.4,-6.6,1.2,2.6],"type":"tank","h":1.2},
+    {"r":[10.6,4.6,0.4,0.4],"type":"pillar","h":1.4},
+    {"r":[5.6,4.6,2.4,1.4],"type":"compressor","h":1.3}
+  ],
+  "enemies": [
+    {"pose":"arms","p":[0.0,-4.0],"patrol":[[0.0,-4.0],[0.0,-4.0]],"reaction":0.5,"angle":1.5708,"kind":"proprietario","sindico":true}
+  ]
+}
