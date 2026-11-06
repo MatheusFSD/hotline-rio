@@ -1,6 +1,6 @@
 extends Node
 ## The guns, the hero's reloads and bullets going into people (tools/build_sfx.py), and the world
-## answering: bullets in walls, brass landing, his feet, changing hands, a breaker and a camera going
+## answering: bullets in walls, furniture, steel and glass, enemies seeing him, brass landing, his feet, changing hands, a breaker and a camera going
 ## (tools/build_sfx_world.py). These sounds live in the world's time: slow motion drags down whatever is ringing and whatever starts during
 ## it, and when the death's slow motion ends, what is still ringing is cut.
 const SHOTS := {
@@ -30,6 +30,14 @@ const TICK_DB := -14.0
 ## Under the guns, and never so many that they crowd one out: a shotgun's seven pellets in a wall are one
 ## sound, and a minigun's brass lands as a patter, not every round.
 const WALL := preload("res://assets/audio/sfx/wall_hit.ogg")
+## What the bullet stopped in (Simulation.SURFACES); stone is the walls'.
+const SURFACE_HITS := {"stone":WALL,"wood":preload("res://assets/audio/sfx/wood_hit.ogg"),
+	"metal":preload("res://assets/audio/sfx/metal_hit.ogg"),"soft":preload("res://assets/audio/sfx/soft_hit.ogg")}
+const GLASS := preload("res://assets/audio/sfx/glass_hit.ogg")
+const GLASS_DB := -5.0
+const ALERT := preload("res://assets/audio/sfx/alert.ogg")
+const ALERT_DB := -12.0
+const ALERT_GAP := .25      # a room turning on him at once is one sting
 const WALL_VARY := .14
 const WALL_DB := -7.0
 const WALL_GAP := .06
@@ -64,6 +72,8 @@ var world := 1.0
 var cutting: Tween
 var reload_stage := 0   # 0 no reload, 1 pulled, 2 pushed
 var wall_wait := 0.0
+var glass_wait := 0.0
+var alert_wait := 0.0
 var casing_wait := 0.0
 var casings: Array[float] = []   # brass in the air: seconds until each lands
 var stride := STRIDE*.5
@@ -113,7 +123,11 @@ func hear(event: Dictionary) -> void:
 	elif event.type == "impact":
 		if wall_wait > 0.0: return
 		wall_wait = WALL_GAP
-		play(WALL,1.0,WALL_VARY,WALL_DB if event.get("team","player") == "player" else WALL_ENEMY_DB)
+		play(SURFACE_HITS.get(event.get("surface","stone"),WALL),1.0,WALL_VARY,WALL_DB if event.get("team","player") == "player" else WALL_ENEMY_DB)
+	elif event.type == "glass":
+		if glass_wait > 0.0: return
+		glass_wait = WALL_GAP
+		play(GLASS,1.0,WALL_VARY,GLASS_DB)
 	elif event.type == "switch": play(KATANA_DRAW if event.melee else GUN_DRAW,1.0,VARY,DRAW_DB)
 	elif event.type == "blackout": play(BREAKER,1.0,0.0)
 	elif event.type == "camera_down": play(CAMERA_BREAK,1.0,VARY,CAMERA_DB)
@@ -126,6 +140,8 @@ func hear(event: Dictionary) -> void:
 ## makes no footfall.
 func advance(dt: float,hero: Dictionary,walking: bool) -> void:
 	wall_wait = maxf(0.0,wall_wait-dt)
+	glass_wait = maxf(0.0,glass_wait-dt)
+	alert_wait = maxf(0.0,alert_wait-dt)
 	casing_wait = maxf(0.0,casing_wait-dt)
 	for i in range(casings.size()-1,-1,-1):
 		casings[i] -= dt
@@ -141,6 +157,12 @@ func advance(dt: float,hero: Dictionary,walking: bool) -> void:
 		stride -= STRIDE
 		foot = 1-foot
 		play(STEPS[foot],1.0,STEP_VARY,STEP_DB)
+
+## An enemy has just seen him (main.gd sees it turn).
+func alert() -> void:
+	if alert_wait > 0.0: return
+	alert_wait = ALERT_GAP
+	play(ALERT,1.0,VARY,ALERT_DB)
 
 ## A letter hits the glass.
 func slam(heavy: bool) -> void:
@@ -188,6 +210,8 @@ func silence() -> void:
 	world = 1.0
 	reload_stage = 0
 	wall_wait = 0.0
+	glass_wait = 0.0
+	alert_wait = 0.0
 	casing_wait = 0.0
 	casings.clear()
 	stride = STRIDE*.5

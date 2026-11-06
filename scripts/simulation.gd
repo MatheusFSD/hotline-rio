@@ -34,6 +34,7 @@ var solids: Array[Rect2] = []
 ## The solids nothing sees or shoots through: all but the glass panes ("type":"glass", docs/planejado/fase10-12.md),
 ## which hold a body back but let sight and bullets pass.
 var opaque: Array[Rect2] = []
+var panes: Array[Dictionary] = []   # the glass: bullets go through, it cracks (presentation)
 var bounds: Rect2
 var exit_rect: Rect2
 var grid := AStarGrid2D.new()
@@ -121,9 +122,11 @@ func load_level(index: int) -> void:
 	exit_rect = rect(layout.exit)
 	solids.clear()
 	opaque.clear()
+	panes.clear()
 	for entry in layout.solids:
 		solids.append(rect(entry.r))
 		if entry.type != "glass": opaque.append(rect(entry.r))
+		else: panes.append({"r":rect(entry.r),"h":float(entry.h)})
 	for x in range(-40, 40):
 		for z in range(-30, 30):
 			grid.set_point_solid(Vector2i(x, z), blocked(Vector2(x,z)*CELL, RADIUS + 0.09))
@@ -212,6 +215,26 @@ func clues_done() -> bool:
 
 ## Every enemy down, no shadow-flame still looking for a body and every required clue taken:
 ## the exit counts.
+## What a bullet stops in, for its sound and its marks (presentation only). Anything not named is stone.
+const SURFACES := {
+	"desk":"wood","counter":"wood","crate":"wood","cocktail":"wood","table":"wood","easel":"wood","pallet":"wood",
+	"chairs":"wood","bench":"wood","winerack":"wood","seat":"wood","lectern":"wood","stalls":"wood","sideboard":"wood",
+	"dining":"wood","bar":"wood","anchordesk":"wood","meeting":"wood","worktable":"wood","workbench":"wood",
+	"chamberdoor":"wood","stage":"wood","platform":"wood","vanity":"wood","canvases":"wood","ticket":"wood",
+	"shelves":"metal","lockers":"metal","safe":"metal","console":"metal","van":"metal","compressor":"metal",
+	"studiocam":"metal","stove":"metal","tank":"metal","motor":"metal","gunrack":"metal","rack":"metal","lathe":"metal",
+	"truck":"metal","forklift":"metal","bogie":"metal","bonde":"metal","roletas":"metal","railing":"metal","shaft":"metal",
+	"drums":"metal","prep":"metal","optable":"metal","speaker":"metal",
+	"sofa":"soft","bed":"soft","kingbed":"soft","lounger":"soft","plant":"soft","hedge":"soft","tree":"soft"}
+
+func surface_at(p: Vector2) -> Dictionary:
+	## The solid a bullet stopped at: its kind of surface, its rectangle and height.
+	for entry in layout.solids:
+		if entry.type == "glass": continue
+		var r := rect(entry.r)
+		if r.grow(.03).has_point(p): return {"surface":SURFACES.get(entry.type,"stone"),"rect":r,"h":float(entry.h)}
+	return {}
+
 func cleared() -> bool:
 	return kills == enemies.size() and wisps.is_empty() and clues_done()
 
@@ -920,6 +943,11 @@ func update(dt: float,input: Dictionary = {}) -> void:
 				if hit < first: first = hit; target = breaker
 		bullet.life -= dt
 		var endpoint := a.lerp(b,first) if first != INF else b
+		for pane in panes:
+			# Bullets go through glass; it cracks where they do (presentation only).
+			if (pane.r as Rect2).has_point(a): continue
+			var through := segment_box(a,b,pane.r)
+			if through < first: events.append({"type":"glass","p":a.lerp(b,through),"direction":(bullet.v as Vector2).normalized(),"rect":pane.r,"h":pane.h})
 		events.append({"type":"trace","a":a,"b":endpoint,"origin":bullet.origin,"direction":(bullet.v as Vector2).normalized(),"team":bullet.team,"shooter":bullet.shooter})
 		if first != INF:
 			if not target.is_empty():
@@ -931,7 +959,7 @@ func update(dt: float,input: Dictionary = {}) -> void:
 				elif bullet.team == "player": kill(target,(bullet.v as Vector2).normalized(),bullet.weapon)
 				elif god: events.append({"type":"impact","p":endpoint,"direction":-(bullet.v as Vector2).normalized(),"team":bullet.team})   # it glances off
 				else: die((bullet.v as Vector2).normalized(),bullet.weapon)
-			else: events.append({"type":"impact","p":endpoint,"direction":-(bullet.v as Vector2).normalized(),"team":bullet.team})
+			else: events.append({"type":"impact","p":endpoint,"direction":-(bullet.v as Vector2).normalized(),"team":bullet.team}.merged(surface_at(endpoint)))
 			bullets.remove_at(i)
 		elif bullet.life <= 0: bullets.remove_at(i)
 		else: bullet.p = b

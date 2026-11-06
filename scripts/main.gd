@@ -36,6 +36,20 @@ const ZOOM_OUT_TIME := .35
 const HIT_STOP := {"katana":.07,"shotgun":.06}
 const HIT_STOP_BULLET := .045
 const HIT_STOP_REST := .14
+## The last enemy down: a longer hold, the music drops out and comes back filtered, opening up.
+const LAST_STOP := .16
+const DROP_DEPTH_DB := -24.0
+const DROP_HOLD := .5
+const DROP_RETURN := .7
+## Slow motion muffles the night's music, down to this cutoff at the deepest; the death's too.
+const MUSIC_BUS := "Music"
+const MUFFLED_HZ := 700.0
+const OPEN_HZ := 20000.0
+## The aim: it opens on each shot, turns through a reload, and an X is left on each kill.
+const AIM_KICK := .7
+const AIM_RETURN := 14.0
+const AIM_SPIN := 1.2          # turns per second while reloading
+const MARK_TIME := .45
 const RETRY_GUARD := .3         # R is also the reload: a tap as he dies must not skip his death
 const DEATH_ZOOM := .62        # the frame shrinks to 38% of the gameplay view
 const DEATH_ZOOM_IN := .22
@@ -91,6 +105,13 @@ var aim_marker: MeshInstance3D
 var last_state := ""
 var fire_armed := true
 var hit_stop := 0.0
+var alerted_before: Array[bool] = []
+var all_down := false
+var music_drop := -1.0          # real seconds since the last enemy fell, while the drop runs
+var music_bus := -1
+var aim_kick := 0.0
+var kill_marks: Array[Dictionary] = []
+var aim_material: StandardMaterial3D
 var hit_stop_rest := 0.0
 var effects
 var entrance          # the level's opening walk-in while it plays
@@ -123,6 +144,8 @@ func _ready() -> void:
 	_setup_cursor()
 	music = AudioStreamPlayer.new()
 	add_child(music)
+	_setup_music_bus()
+	music.bus = MUSIC_BUS
 	death_music = AudioStreamPlayer.new()
 	add_child(death_music)
 	sound = SoundBoard.new()
@@ -481,6 +504,7 @@ func _setup_cursor() -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.albedo_color = Color("f6d98b")
 	aim_marker.material_override = mat
+	aim_material = mat
 	add_child(aim_marker)
 	var cross := MeshInstance3D.new()
 	cross.mesh = mesh
@@ -631,6 +655,14 @@ func start_or_resume() -> void:
 		death_time = -1.0
 		hit_stop = 0.0
 		hit_stop_rest = 0.0
+		alerted_before.clear()
+		all_down = false
+		music_drop = -1.0
+		aim_kick = 0.0
+		aim_marker.rotation.y = 0.0
+		for mark in kill_marks: mark.node.queue_free()
+		kill_marks.clear()
+		_update_music_bus(0.0)
 		camera.basis = camera_basis
 		_apply_kill_zoom()
 		phase_view = 0.0
@@ -801,10 +833,16 @@ func _physics_process(dt: float) -> void:
 	for event in sim.events:
 		sound.hear(event)
 		if event.type == "blood" and not event.player and event.gore_allowed: _hold_for_kill(event.get("weapon",""))
+		if event.type == "blood" and not event.player: _mark_kill(event.p)
+		if event.type == "shot" and event.team == "player": aim_kick = 1.0
 		if event.type == "clue": hud.show_clue(event.title,event.text)
 		elif event.type == "rise": _rise(event)
 		elif event.type == "blackout": _blackout()
 		elif event.type == "pad_used": _pad_out(event.p)
+	_watch_alerts()
+	_watch_last_kill()
+	_update_aim(dt,world_dt)
+	_update_music_bus(dt)
 	avesso.update(world_dt,sim.state in ["paused","ready"])
 	camera_view.update(world_dt,sim.state in ["paused","ready"])
 	patient_view.update()
@@ -813,6 +851,98 @@ func _physics_process(dt: float) -> void:
 	aim_marker.position = Vector3(aim.x,1.15,aim.y)
 	aim_marker.visible = sim.state == "playing"
 	update_ui()
+
+func _setup_music_bus() -> void:
+	music_bus = AudioServer.get_bus_index(MUSIC_BUS)
+	if music_bus < 0:
+		AudioServer.add_bus()
+		music_bus = AudioServer.bus_count-1
+		AudioServer.set_bus_name(music_bus,MUSIC_BUS)
+		AudioServer.set_bus_send(music_bus,"Master")
+		var muffle := AudioEffectLowPassFilter.new()
+		muffle.cutoff_hz = OPEN_HZ
+		AudioServer.add_bus_effect(music_bus,muffle)
+	AudioServer.set_bus_effect_enabled(music_bus,0,false)
+
+func _update_music_bus(dt: float) -> void:
+	## The slow motion's muffle and the last kill's drop, on the night's music only.
+	var depth := clampf((1.0-time_scale())/(1.0-SLOWMO_SCALE),0,1)
+	var cutoff := OPEN_HZ*pow(MUFFLED_HZ/OPEN_HZ,depth)
+	var level := 0.0
+	if music_drop >= 0:
+		music_drop += dt
+		if music_drop < .06: level = DROP_DEPTH_DB*music_drop/.06
+		elif music_drop < DROP_HOLD: level = DROP_DEPTH_DB
+		else:
+			var back := clampf((music_drop-DROP_HOLD)/DROP_RETURN,0,1)
+			level = DROP_DEPTH_DB*(1.0-back)*(1.0-back)
+			cutoff = minf(cutoff,OPEN_HZ*pow(MUFFLED_HZ/OPEN_HZ,1.0-back))
+			if back >= 1.0: music_drop = -1.0
+		if music_drop >= 0 and music_drop < DROP_HOLD: cutoff = minf(cutoff,MUFFLED_HZ)
+	AudioServer.set_bus_volume_db(music_bus,level)
+	var muffle := AudioServer.get_bus_effect(music_bus,0) as AudioEffectLowPassFilter
+	muffle.cutoff_hz = cutoff
+	AudioServer.set_bus_effect_enabled(music_bus,0,cutoff < OPEN_HZ*.95)
+
+func _watch_alerts() -> void:
+	## An enemy turning on him gets a "!" over the head, and the room one sting.
+	if alerted_before.size() != sim.enemies.size():
+		alerted_before.resize(sim.enemies.size())
+		for i in sim.enemies.size(): alerted_before[i] = bool(sim.enemies[i].alerted)
+	for i in sim.enemies.size():
+		var e: Dictionary = sim.enemies[i]
+		var now: bool = e.alive and e.alerted
+		if now and not alerted_before[i] and sim.state == "playing" and i+1 < actors.size():
+			actors[i+1].alert_flash()
+			sound.alert()
+		alerted_before[i] = now
+
+func _watch_last_kill() -> void:
+	## The last enemy down: hold longer than any kill, a heavy hit, and the music drops and opens back.
+	var down: bool = sim.enemies.size() > 0 and sim.kills >= sim.enemies.size()
+	if down and not all_down and sim.state in ["playing","won"]:
+		hit_stop = maxf(hit_stop,LAST_STOP)
+		hit_stop_rest = LAST_STOP+HIT_STOP_REST
+		sound.slam(true)
+		if sim.state == "playing": music_drop = 0.0
+	all_down = down
+
+func _mark_kill(p: Vector2) -> void:
+	var mark := Node3D.new()
+	var material := aim_material.duplicate() as StandardMaterial3D
+	material.albedo_color = Color("ff2a3d")
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.no_depth_test = true   # drawn over the body it marks
+	material.render_priority = 1
+	var bar_mesh := BoxMesh.new()
+	bar_mesh.size = Vector3(.34,.015,.06)
+	for angle in [PI/4,-PI/4]:
+		var bar := MeshInstance3D.new()
+		bar.mesh = bar_mesh
+		bar.material_override = material
+		bar.rotation.y = angle
+		bar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mark.add_child(bar)
+	mark.position = Vector3(p.x,1.15,p.y)
+	add_child(mark)
+	kill_marks.append({"node":mark,"material":material,"age":0.0})
+
+func _update_aim(dt: float,world_dt: float) -> void:
+	aim_kick *= exp(-AIM_RETURN*dt)
+	aim_marker.scale = Vector3.ONE*(1.0+AIM_KICK*aim_kick)
+	var quarter := PI/2
+	if sim.player.reload > 0 and not sim.player.melee: aim_marker.rotation.y += world_dt*TAU*AIM_SPIN
+	else: aim_marker.rotation.y = lerp_angle(aim_marker.rotation.y,roundf(aim_marker.rotation.y/quarter)*quarter,1.0-exp(-18.0*dt))
+	for i in range(kill_marks.size()-1,-1,-1):
+		var mark: Dictionary = kill_marks[i]
+		mark.age += dt
+		if mark.age >= MARK_TIME:
+			mark.node.queue_free()
+			kill_marks.remove_at(i)
+			continue
+		var pop: float = lerpf(1.8,1.0,clampf(mark.age/.08,0,1))
+		mark.node.scale = Vector3.ONE*pop
+		mark.material.albedo_color.a = clampf((MARK_TIME-mark.age)/.2,0,1)
 
 func _hold_for_kill(gun: String) -> void:
 	if hit_stop_rest > 0.0: return

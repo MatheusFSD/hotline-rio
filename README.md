@@ -608,15 +608,21 @@ Os personagens usam modelos dos pacotes PSX fornecidos, adaptados ao rig UAL com
 
 Os arquivos ficam em `assets/intro`. Estúdio, viatura, cones e fita são gerados por `tools/build_intro.py`, que reaproveita as texturas e a geometria de `build_environment.py`. A abertura só toca no lançamento real do jogo; os testes que instanciam a cena diretamente não a exibem.
 
-**O mundo responde.** `tools/build_sfx_world.py` sintetiza os sons menores, sem gravações, e `scripts/sound_board.gd` acerta os volumes: bala na parede (os sete bagos de uma escopeta valem um som só, e a bala do inimigo soa mais baixa), cápsula do protagonista caindo cerca de 0,6 s depois do tiro, passos alternados a cada 1,45 m (em modo espectro não há passos), troca entre katana e arma, o disjuntor e a câmera quebrando.
+**O mundo responde.** `tools/build_sfx_world.py` sintetiza os sons menores, sem gravações, e `scripts/sound_board.gd` acerta os volumes: bala na parede (os sete bagos de uma escopeta valem um som só, e a bala do inimigo soa mais baixa), cápsula do protagonista caindo cerca de 0,6 s depois do tiro, passos alternados a cada 1,45 m (em modo espectro não há passos), troca entre katana e arma, o disjuntor, a câmera quebrando, a bala em madeira, em metal, em estofado ou em planta, o vidro trincando e o alerta de quem vê o protagonista (um toque só, mesmo que a sala inteira o veja).
 
 ## Sensação de impacto
 
 - **Sangue que fica:** cada mancha é uma instância de `MultiMesh`, com limite de 6.000, e as poças só somem ao tentar de novo. Antes, o limite de 128 apagava as primeiras poças por volta da 6ª morte.
 - **Congelamento no golpe:** toda morte causada pelo protagonista segura o mundo por 45 ms (70 ms na katana, 60 ms na escopeta), em tempo real, antes do zoom e da câmera lenta. O som e a câmera não param. Depois de um congelamento há 0,14 s de folga, para a minigun não engasgar.
+- **Marcas que ficam:** a bala que para em algo deixa um buraco com borda lascada, na face que acertou, e solta lascas do material: pó e faísca na alvenaria, farpas na madeira, faíscas no metal, fiapos no estofado e nas plantas, que não ficam marcados (`Simulation.SURFACES`). Buracos e trincas ficam até tentar de novo.
+- **Vidro:** a bala atravessa o vidro como antes, mas ele trinca onde ela passou, e caem cacos.
+- **Inimigo que vê:** quando um inimigo passa a perseguir o protagonista, um "!" amarelo salta sobre a cabeça dele por 0,65 s.
+- **Mira:** abre a cada tiro, gira durante a recarga e volta ao lugar; cada morte deixa um X vermelho sobre o corpo por 0,45 s.
+- **Último inimigo:** congela 0,16 s, mais que qualquer morte, com uma pancada grave; a música cai, fica abafada por meio segundo e volta abrindo.
+- **Música na câmera lenta:** a música da fase passa por um barramento próprio, `Music`, com um passa-baixa que a abafa na câmera lenta das mortes e na da morte do protagonista.
 - **Empurrão da câmera:** o tiro do protagonista empurra a câmera contra a mira, na medida do `kick` de cada arma, e a morte a empurra na direção do corpo. O empurrão não mexe na mira.
 
-`tests/feel_test.gd` verifica os três. `tests/feel_capture.gd` grava em `.qa/feel/` o chão da primeira fase depois de todas as mortes.
+`tests/feel_test.gd` verifica todos esses. `tests/feel_capture.gd` grava em `.qa/feel/` o chão da primeira fase depois de todas as mortes.
 
 ## Katana
 

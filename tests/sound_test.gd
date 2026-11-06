@@ -51,7 +51,7 @@ func run() -> void:
 	game.sim.player.ammo = 12
 	game.sim.attack()
 	game._physics_process(0.0)
-	check(ringing(game) == ["pistol"],"Firing in the game: the shot sounds on that frame")
+	check(ringing(game).filter(func(n): return n != "alert") == ["pistol"],"Firing in the game: the shot sounds on that frame (and the room may turn on him)")
 	game.sound.silence()
 	game.sim.events.clear()
 	game.sim.enemies[0].weapon = "rifle"
@@ -209,6 +209,18 @@ func run() -> void:
 	game.sound.silence()
 	game.sound.hear({"type":"camera_down"})
 	check(ringing(game) == ["camera_break"],"A camera breaks")
+	game.sound.silence()
+	# What the bullet stopped in, glass on the way, a room turning on him.
+	for surface in ["stone","wood","metal","soft"]:
+		game.sound.silence()
+		game.sound.hear({"type":"impact","team":"player","surface":surface})
+		check(ringing(game) == [game.sound.SURFACE_HITS[surface].resource_path.get_file().get_basename()],"A bullet into %s sounds as it" % surface)
+	game.sound.silence()
+	for i in 4: game.sound.hear({"type":"glass"})
+	check(ringing(game) == ["glass_hit"],"A shotgun through a pane: one crack")
+	game.sound.silence()
+	for i in 5: game.sound.alert()
+	check(ringing(game) == ["alert"],"A whole room seeing him: one sting")
 	game.sound.silence()
 	# Slow motion, with the real clock of a kill.
 	game.sound.play(game.sound.SHOTS.pistol,1.0,0.0)

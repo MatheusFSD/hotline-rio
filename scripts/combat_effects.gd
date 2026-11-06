@@ -33,6 +33,23 @@ const DUST := {
 	"blackout":[Color("fff2a0"),Color("ffffff"),Color("ffb347")],   # the breaker's sparks
 	"camera_down":[Color("ffd36a"),Color("d8d8d2"),Color("2b2d2b")]}   # sparks and bits of housing
 var bits: Array[Dictionary] = []
+## A bullet stopped by something leaves a hole in it, and breaks off what it is made of; a pane it
+## goes through cracks. Holes and cracks stay until the retry, like the blood.
+const DEBRIS := {
+	"stone":{"colors":[Color("efbb74"),Color("c9bfae"),Color("8f877a"),Color("b4a28b")],"count":7,"size":Vector3(.06,.06,.06),"speed":2.2,"life":.6},
+	"wood":{"colors":[Color("c08a52"),Color("8a5a32"),Color("5e3b20")],"count":7,"size":Vector3(.03,.03,.12),"speed":2.4,"life":.9},
+	"metal":{"colors":[Color("fff2a0"),Color("ffb347"),Color("ffffff")],"count":9,"size":Vector3(.03,.03,.03),"speed":4.0,"life":.25},
+	"soft":{"colors":[Color("d8d2c4"),Color("a89f90")],"count":6,"size":Vector3(.05,.05,.05),"speed":1.0,"life":.7},
+	"spark":{"colors":[Color("efbb74"),Color("b4a28b")],"count":5,"size":Vector3(.06,.06,.06),"speed":2.0,"life":.5}}
+const HOLE_RIM := {"stone":Color("b3aa9b"),"wood":Color("a87f52"),"metal":Color("d6d2c8")}
+const HOLE_SIZE := {"stone":.075,"wood":.06,"metal":.05}
+const MAX_HOLES := 1500
+const MAX_CRACKS := 400
+const SHARDS := [Color("e8f6fb"),Color("bfdde6"),Color("ffffff")]
+var holes: MultiMesh
+var cracks: MultiMesh
+var hole_total := 0
+var crack_total := 0
 var stain_sheets: Array[MultiMesh] = []
 var sheet_used: Array[int] = []
 var stain_total := 0
@@ -72,6 +89,110 @@ func setup(view: Camera3D,sim) -> void:
 	stain_material.vertex_color_use_as_albedo = true
 	stain_material.vertex_color_is_srgb = true
 	for i in STAIN_SHEETS: _add_stain_sheet(stain_material)
+	holes = _mark_sheet(_hole_mesh(),MAX_HOLES,false)
+	cracks = _mark_sheet(_crack_mesh(),MAX_CRACKS,true)
+
+func _mark_sheet(mesh: ArrayMesh,count: int,see_through: bool) -> MultiMesh:
+	var mark_material := StandardMaterial3D.new()
+	mark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mark_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mark_material.vertex_color_use_as_albedo = true
+	mark_material.vertex_color_is_srgb = true
+	if see_through: mark_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var sheet := MultiMesh.new()
+	sheet.transform_format = MultiMesh.TRANSFORM_3D
+	sheet.use_colors = true
+	sheet.mesh = mesh
+	sheet.instance_count = count
+	sheet.visible_instance_count = 0
+	var node := MultiMeshInstance3D.new()
+	node.multimesh = sheet
+	node.material_override = mark_material
+	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.custom_aabb = AABB(Vector3(-200,-1,-200),Vector3(400,8,400))
+	add_child(node)
+	return sheet
+
+func _hole_mesh() -> ArrayMesh:
+	## A dark core in a ring of chipped surface, flat in its own XY plane, facing +Z, radius 1.
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var core := Color(.11,.1,.09)
+	var ring: Array[Vector3] = []
+	var rim: Array[Vector3] = []
+	for i in 7:
+		var angle := TAU*i/7
+		ring.append(Vector3(cos(angle),sin(angle),0)*rng.randf_range(.5,.62))
+		rim.append(Vector3(cos(angle+.2),sin(angle+.2),0)*rng.randf_range(.8,1.0))
+	for i in 7:
+		var j := (i+1)%7
+		for v in [Vector3.ZERO,ring[i],ring[j]]:
+			st.set_color(core); st.add_vertex(v)
+		for v in [ring[i],rim[i],ring[j],ring[j],rim[i],rim[j]]:
+			st.set_color(Color.WHITE); st.add_vertex(v)
+	return st.commit()
+
+func _crack_mesh() -> ArrayMesh:
+	## Spokes running out of the point where it went through, bright at the centre, radius 1.
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in 8:
+		var angle := TAU*i/8+rng.randf_range(-.25,.25)
+		var along := Vector3(cos(angle),sin(angle),0)
+		var side := Vector3(-along.y,along.x,0)*.035
+		var reach := rng.randf_range(.6,1.0)
+		var bend := along.rotated(Vector3.BACK,rng.randf_range(-.3,.3))*reach
+		var mid := along*reach*.5
+		st.set_color(Color(1,1,1,.9)); st.add_vertex(side)
+		st.set_color(Color(1,1,1,.9)); st.add_vertex(-side)
+		st.set_color(Color(1,1,1,.55)); st.add_vertex(mid)
+		st.set_color(Color(1,1,1,.55)); st.add_vertex(mid+side*.6)
+		st.set_color(Color(1,1,1,.55)); st.add_vertex(mid-side*.6)
+		st.set_color(Color(1,1,1,.2)); st.add_vertex(bend)
+	for i in 6:
+		var a := TAU*i/6
+		var b := TAU*(i+1)/6
+		for v in [Vector3.ZERO,Vector3(cos(a),sin(a),0)*.09,Vector3(cos(b),sin(b),0)*.09]:
+			st.set_color(Color(1,1,1,.75)); st.add_vertex(v)
+	return st.commit()
+
+## The face of rectangle r that point p lies on, as its outward normal.
+static func face_normal(r: Rect2,p: Vector2) -> Vector2:
+	var gaps := [absf(p.x-r.position.x),absf(p.x-r.end.x),absf(p.y-r.position.y),absf(p.y-r.end.y)]
+	var normals := [Vector2.LEFT,Vector2.RIGHT,Vector2.UP,Vector2.DOWN]
+	var best := 0
+	for i in 4: if gaps[i] < gaps[best]: best = i
+	return normals[best]
+
+func _mark(sheet: MultiMesh,index: int,at: Vector3,normal: Vector3,size: float,color: Color) -> void:
+	var slot := index%sheet.instance_count
+	sheet.visible_instance_count = mini(index+1,sheet.instance_count)
+	var facing := Basis.looking_at(-normal,Vector3.UP)*Basis(Vector3.BACK,rng.randf()*TAU)
+	sheet.set_instance_transform(slot,Transform3D(facing.scaled(Vector3.ONE*size),at+normal*.012))
+	sheet.set_instance_color(slot,color)
+
+func _hole(event: Dictionary) -> void:
+	var surface: String = event.surface
+	if not HOLE_RIM.has(surface): return   # a sofa or a hedge takes it without a mark
+	var r: Rect2 = event.rect
+	var n := face_normal(r,event.p)
+	var height := minf(1.15,float(event.h)-.12)
+	if height < .1: return
+	_mark(holes,hole_total,Vector3(event.p.x,height,event.p.y),Vector3(n.x,0,n.y),HOLE_SIZE[surface]*rng.randf_range(.85,1.2),HOLE_RIM[surface])
+	hole_total += 1
+
+func _crack(event: Dictionary) -> void:
+	## On the face of the pane the camera sees, where the bullet crossed it, and its bits on the floor.
+	var r: Rect2 = event.rect
+	var thin_z := r.size.y <= r.size.x
+	var p: Vector2 = event.p
+	var at := Vector3(p.x,minf(1.15,float(event.h)-.15),r.end.y+.006) if thin_z else Vector3(r.get_center().x,minf(1.15,float(event.h)-.15),p.y)
+	var normal := Vector3.BACK if thin_z else Vector3.RIGHT
+	_mark(cracks,crack_total,at,normal,rng.randf_range(.22,.34),Color.WHITE)
+	crack_total += 1
+	var direction := Vector3(event.direction.x,0,event.direction.y)
+	for i in 6:
+		_add_bit(at+direction*.08,direction*rng.randf_range(.6,1.8)+Vector3(rng.randf_range(-.8,.8),rng.randf_range(.4,1.6),rng.randf_range(-.8,.8)),SHARDS[i%SHARDS.size()],Vector3(.05,.012,.04),4.0)
 
 func _add_stain_sheet(stain_material: StandardMaterial3D) -> void:
 	## One irregular blot, drawn with its own size, turn and colour for every stain.
@@ -114,6 +235,10 @@ func material(color: Color) -> StandardMaterial3D:
 func clear() -> void:
 	for entry in bits: entry.node.queue_free()
 	for sheet in stain_sheets: sheet.visible_instance_count = 0
+	if holes: holes.visible_instance_count = 0
+	if cracks: cracks.visible_instance_count = 0
+	hole_total = 0
+	crack_total = 0
 	sheet_used.fill(0)
 	stain_total = 0
 	growing.clear()
@@ -151,8 +276,14 @@ func consume(events: Array[Dictionary],actors: Array[Node3D],guests: Array[Node3
 			"impact":
 				var p := Vector3(event.p.x,1.15,event.p.y)
 				var normal := Vector3(event.direction.x,0,event.direction.y)
-				for i in 5:
-					_add_bit(p,normal*rng.randf_range(1,3)+Vector3(rng.randf_range(-1,1),rng.randf_range(.5,2),rng.randf_range(-1,1)),Color("efbb74") if i%2 else Color("b4a28b"),Vector3.ONE*rng.randf_range(.035,.085),.5)
+				var surface: String = event.get("surface","spark")
+				var debris: Dictionary = DEBRIS.get(surface,DEBRIS.spark)
+				if event.has("rect"): p.y = clampf(float(event.h)-.12,.15,1.15)
+				for i in debris.count:
+					var spread := Vector3(rng.randf_range(-1,1),rng.randf_range(.5,2),rng.randf_range(-1,1))
+					_add_bit(p,normal*rng.randf_range(.5,1.5)*debris.speed+spread*debris.speed*.5,debris.colors[i%debris.colors.size()],debris.size*rng.randf_range(.6,1.4),debris.life*rng.randf_range(.8,1.2))
+				if event.has("rect"): _hole(event)
+			"glass": _crack(event)
 			"unravel","wisp_gone","tear","camera_down","blackout":
 				# A torn casca's tenant coming apart, a flame snuffed out, a bag ripped: dark dust.
 				var p := Vector3(event.p.x,1.0,event.p.y)

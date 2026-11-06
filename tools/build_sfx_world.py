@@ -4,7 +4,10 @@
 #   - step_a, step_b: the hero's feet, two so they alternate;
 #   - katana_draw, gun_draw: changing hands, steel leaving the scabbard or a pistol grip slapped home;
 #   - breaker: the fuse box going, a clunk, an arc, the building's hum dying;
-#   - camera_break: a security camera shot or cut, its housing cracking and glass falling.
+#   - camera_break: a security camera shot or cut, its housing cracking and glass falling;
+#   - wood_hit, metal_hit, soft_hit: a bullet stopping in furniture, in steel, in a sofa or a hedge;
+#   - glass_hit: a bullet through a pane, the crack and a few bits falling;
+#   - alert: an enemy has seen him, a short sting under the guns.
 # Every sound starts on its own attack, so it lands on the frame of the event. The levels between them
 # live in scripts/sound_board.gd.
 # Use: blender -b --factory-startup --python tools/build_sfx_world.py
@@ -101,9 +104,43 @@ for at, level, f in ((.12, .3, 4380), (.2, .24, 5610), (.27, .18, 3970), (.34, .
     glass += (tone(k - at, f) + .5 * tone(k - at, f * 1.47)) * drop(k, at, .018) * level
 out('camera_break', crack + sparks + glass)
 
+# A bullet into wood: a dull knock with the splinter's crack on top.
+k = clock(.2)
+sweep = 2 * np.pi * np.cumsum(230 - 70 * np.clip(k / .04, 0, 1)) / RATE
+wood = np.sin(sweep) * drop(k, 0, .045) * .9 + noise(k, 300, 2500) * drop(k, 0, .02) * .8
+wood += noise(k, 2000, 6000) * drop(k, .003, .004) * .5
+out('wood_hit', wood)
+
+# A bullet off steel: a click, then an inharmonic ring that dies quickly.
+k = clock(.42)
+metal = noise(k, 3000, 9000) * drop(k, 0, .003) * .9
+for partial, share, decay in ((1870, 1.0, .16), (2960, .7, .11), (4410, .5, .08), (6230, .3, .05)):
+    metal += tone(k, partial) * drop(k, 0, decay) * share * .45
+out('metal_hit', metal)
+
+# A bullet into something soft: a muffled thump, little else.
+k = clock(.15)
+soft = noise(k, high=600) * drop(k, 0, .03) * 1.0 + tone(k, 70) * drop(k, 0, .04) * .5
+out('soft_hit', soft * np.clip(k / .002, 0, 1))
+
+# A bullet through a pane: the crack, and bits of it landing.
+k = clock(.42)
+glass_hit = noise(k, 3000, 10000) * drop(k, 0, .01) * 1.0 + noise(k, 900, 3000) * drop(k, 0, .02) * .3
+for at, level, f in ((.06, .35, 4810), (.11, .3, 6120), (.17, .22, 5290), (.24, .15, 7020), (.31, .1, 4470)):
+    glass_hit += (tone(k - at, f) + .45 * tone(k - at, f * 1.52)) * drop(k, at, .014) * level
+out('glass_hit', glass_hit)
+
+# He has been seen: two short, hard notes a tritone apart, the second higher. Under the guns.
+k = clock(.2)
+alert = np.zeros(len(k))
+for at, f in ((0, 740), (.055, 1047)):
+    seg = np.sign(np.sin(2 * np.pi * f * (k - at))) * .35 + np.sin(2 * np.pi * f * (k - at)) * .65
+    alert += seg * drop(k, at, .035) * (k >= at)
+out('alert', band(alert[None, :], high=5000, order=2)[0])
+
 # Read back what the game will play: each must start on its attack, and be as short as it claims.
 import aud
-for name in ('wall_hit', 'casing', 'step_a', 'step_b', 'katana_draw', 'gun_draw', 'breaker', 'camera_break'):
+for name in ('wall_hit', 'casing', 'step_a', 'step_b', 'katana_draw', 'gun_draw', 'breaker', 'camera_break', 'wood_hit', 'metal_hit', 'soft_hit', 'glass_hit', 'alert'):
     path = os.path.join(SFX, name + '.ogg')
     back = aud.Sound(path).data().mean(axis=1)
     spec = np.abs(np.fft.rfft(back)) ** 2

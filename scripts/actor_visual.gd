@@ -83,6 +83,11 @@ var muzzle: Marker3D
 var flash_mesh: Node3D
 var flash_light: OmniLight3D
 var flash_time := 0.0
+## An enemy who has just seen him: a "!" pops over his head and goes (main.gd sees the turn).
+const ALERT_FONT := preload("res://assets/fonts/Bungee-Regular.ttf")
+const ALERT_TIME := .65
+var alert_mark: Label3D
+var alert_time := -1.0
 var body_parts
 static var weapon_manifest: Dictionary = {}
 var weapon := ""
@@ -522,6 +527,8 @@ func clear_effects() -> void:
 	if flash_mesh: flash_mesh.hide()
 	if flash_light: flash_light.hide()
 	if phasing: _set_phasing(false)
+	alert_time = -1.0
+	if alert_mark: alert_mark.visible = false
 	for entry in afterimages: entry.node.queue_free()
 	afterimages.clear()
 	ring_time = 0
@@ -587,8 +594,40 @@ func _spawn_afterimage() -> void:
 	afterimages.append({"node":node,"material":material,"age":0.0})
 	if afterimages.size() > MAX_AFTERIMAGES: afterimages.pop_front().node.queue_free()
 
+func alert_flash() -> void:
+	if not alert_mark:
+		alert_mark = Label3D.new()
+		alert_mark.text = "!"
+		alert_mark.font = ALERT_FONT
+		alert_mark.font_size = 96
+		alert_mark.pixel_size = .012
+		alert_mark.outline_size = 22
+		alert_mark.modulate = Color("ffd23f")
+		alert_mark.outline_modulate = Color("0b0a09")
+		alert_mark.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		alert_mark.no_depth_test = true
+		alert_mark.position = Vector3(0,2.45,0)
+		add_child(alert_mark)
+	alert_time = 0.0
+	alert_mark.visible = true
+
+func _update_alert(dt: float,alive: bool,paused: bool) -> void:
+	if alert_time < 0: return
+	if not paused: alert_time += dt
+	if alert_time >= ALERT_TIME or not alive:
+		alert_time = -1.0
+		alert_mark.visible = false
+		return
+	# Pops in past its size, settles, then fades.
+	var pop := lerpf(0.0,1.35,alert_time/.08) if alert_time < .08 else lerpf(1.35,1.0,clampf((alert_time-.08)/.1,0,1))
+	alert_mark.scale = Vector3.ONE*pop
+	var fade := clampf((ALERT_TIME-alert_time)/.18,0,1)
+	alert_mark.modulate.a = fade
+	alert_mark.outline_modulate.a = fade
+
 func sync(data: Dictionary,dt: float,paused: bool) -> void:
 	position = Vector3(data.p.x,0,data.p.y)
+	_update_alert(dt,data.alive,paused)
 	rotation.y = -data.angle+PI/2
 	if knock_time >= 0:
 		# Thrown along the shot, facing whoever fired it; the corpse stays where it lands.
