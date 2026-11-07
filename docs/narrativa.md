@@ -18,10 +18,10 @@ Confirmado lendo `README.md`, `assets/level*.json` e `scripts/*.gd`:
 | **Desmembramento** | É sorteado **na apresentação** (`CombatEffects.roll_gore_variant`, com um gerador próprio), por arma: pistola e submetralhadora deixam o corpo inteiro em 55% dos casos; escopeta e fuzil sempre arrancam algo; a minigun sempre corta ao meio; a katana sempre arranca algo. A simulação não sabe o resultado. |
 | **Armas** | Pistola, submetralhadora, escopeta, fuzil e minigun, **todas disponíveis desde o começo** na estante do quarto. Os inimigos só usam pistola. |
 | **Modo deus (G)** | Só para depuração. Fica fora da história. |
-| **Noticiário** | `intro.gd`: o "Alerta Rio" da TV TELERIO, com 32 s, só antes da fase 1. Câmera de segurança "CAM 03 BAR DO ARCO" em 26/10/2026 às 23:47, o fantasma azul atravessando o balcão, uma testemunha, o "TEN. SOUZA — POLÍCIA MILITAR", oito suspeitos e o letreiro "BONDE DE SANTA TERESA SUSPENSO". Plano, legenda e letreiro são constantes no código. |
+| **Noticiário** | `intro.gd`: o "Alerta Rio" da TV TELERIO, com 32 s, só antes da fase 1. Câmera de segurança "CAM 03 BAR DO ARCO" em 26/10/2026 às 21:52, o fantasma azul atravessando o balcão, uma testemunha, o "TEN. ELIAS SOUZA — POLÍCIA MILITAR", oito homens armados mortos e o letreiro "BONDE DE SANTA TERESA SUSPENSO". Assistido pelo Caio no quarto; é um flash-forward da fase 1. Planos, falas e letreiro ficam em `assets/intro/plantao.json`. |
 | **Quarto** | `room.gd`: um apartamento na Rua do Lavradio, "4:12 DA MANHÃ" fixo. Tem quatro hotspots: computador, estante de armas, quadro de investigação e porta. |
 | **Investigação** | **Não existe como sistema.** O quadro é uma decoração fixa feita em `tools/build_room.py`: 12 cartões tirados de um atlas de 8 células (recorte, foto do bar, polaroide do fantasma, mapa da Lapa, post-it, foto 3×4, dossiê carimbado e os Arcos) e 13 fios fixos. Clicar no quadro abre o painel "MISSÕES", que lista o campo `mission` de cada JSON e uma linha "??? — siga os fios vermelhos — EM BREVE". Não há pistas coletáveis nem noticiário entre as fases. |
-| **Upgrades** | **Não existem.** O computador abre "LAPANET — LOJA", uma prévia com quatro itens a "R$ ---": COLETE IMPROVISADO, CARREGADOR ESTENDIDO, ESPECTRO +1 s e PASSOS SILENCIOSOS. Não há dinheiro: os pontos da tela de vitória "são só exibidos". |
+| **Upgrades** | **Não existem.** O computador abre "LOJA" (hoje, a página da MARÉ no navegador LOKI), uma prévia com quatro itens a "R$ ---": COLETE IMPROVISADO, CARREGADOR ESTENDIDO, ESPECTRO +1 s e PASSOS SILENCIOSOS. Não há dinheiro: os pontos da tela de vitória "são só exibidos". |
 | **Progresso salvo** | **Não existe.** Arma, katana e modo deus duram só enquanto o jogo está aberto. |
 | **Modelos** | Herói: `Character_01`, de camisa social branca, jeans e barba por fazer. Inimigos: `Character_04` (jaqueta marrom) e `Character_08` (camisa azul), alternados. Já adaptados ao rig UAL na abertura, e reaproveitáveis: `Character_29` (terno e gravata vermelha), `Character_29_Female` e `Character_17_Police`. |
 
@@ -122,7 +122,7 @@ A tela de vitória também muda de registro. O `cleared` vai da gíria ("BAR LIM
 | Personagem | Papel | Onde aparece | Modelo |
 | --- | --- | --- | --- |
 | **Seu Arlindo Matos** | Dono do Bar do Arco, 70 anos. Pagava a taxa. É a razão humana do Ato 1. | Citado nos briefings. Aparece no final A reabrindo o bar. | Só em texto ou na tela final. |
-| **Celeste Andrade** ("MARÉ" na LapaNet) | Perita legista aposentada à força do IML depois de denunciar **corpos que sumiam da gaveta**. Viu a fita da CAM 03 e reconheceu o "frio" no corpo do fantasma. É o contato no computador: dossiês, encomendas, teoria do Avesso. Nunca aparece em pessoa, só como texto no CRT. | A partir da fase 2, no computador do quarto. | Nenhum (texto). |
+| **Celeste Andrade** ("MARÉ" na dark web, pelo navegador LOKI) | Perita legista aposentada à força do IML depois de denunciar **corpos que sumiam da gaveta**. Viu a fita da CAM 03 e reconheceu o "frio" no corpo do fantasma. É o contato no computador: dossiês, encomendas, teoria do Avesso. Nunca aparece em pessoa, só como texto no CRT. | A partir da fase 2, no computador do quarto. | Nenhum (texto). |
 | **Ten. Elias Souza** | O tenente da abertura. Honesto e cansado. Caça o Fantasma no Ato 1, desconfia da Guardião no Ato 2 e no Ato 3 está marcado para "consulta" na Clínica Santa Aurora. | Noticiários. Fase 11 (pista opcional). Final. | `Character_17_Police` (já existe). |
 | **Jairo Trovão** | Apresentador do "Alerta Rio" (o homem da gravata vermelha). Humano, comprado e com medo. No Ato 3 pode virar o aliado que põe a verdade no ar. | Todos os noticiários. Fase 9. Final A. | `Character_29` (já existe). |
 
@@ -221,7 +221,7 @@ Em todos os estágios, um tiro mata o herói. Os estágios são **checkpoints**:
 
 Há duas fontes:
 - **História:** fixo, ganho ao terminar a fase. Toda fase dá um.
-- **Encomendas da Celeste:** opcionais, pagas com **favores**. Cada pista opcional entregue vale 1 favor (veja a seção 6). Isso substitui o "R$ ---" da LapaNet: não existe dinheiro no jogo, e o pagamento é investigação.
+- **Encomendas da Celeste:** opcionais, pagas com **favores**. Cada pista opcional entregue vale 1 favor (veja a seção 6). Isso substitui o "R$ ---" da antiga loja: não existe dinheiro no jogo, e o pagamento é investigação.
 
 ### Armas (estante do quarto)
 
@@ -317,7 +317,7 @@ Caio descobre o poder e segue o dinheiro do Gravata, do bar onde trabalhava até
 
 #### Fase 1 — Bar do Arco, Lapa (existente; tutorial)
 
-- **Na história:** é a noite da abertura. Às 23:47, Caio entrou no bar em pânico para buscar o Seu Arlindo, **atravessou o balcão sem querer** (é o que a CAM 03 mostra) e fugiu pela parede. Agora ele volta, já sabendo um pouco mais. O bando de Russo ocupou o bar para "cobrar o atraso". Russo está no depósito, ao lado da porta do beco onde atirou em Caio.
+- **Na história:** é a noite da abertura, duas horas antes do plantão. O bando de Russo ocupou o bar para "cobrar o atraso" do Seu Arlindo, e Caio entra para buscar o caderno da taxa. É aqui que a CAM 03 o filma atravessando o balcão às 21:52, e são esses oito que o telejornal das 23:52 vai contar mortos. Russo está no depósito, ao lado da porta do beco onde atirou em Caio.
 - **Inimigos:** os 8 atuais, todos humanos. O último (`phone`, em [10.6, 5.2], no depósito) é **Russo**.
 - **Pista obrigatória: CADERNO DA TAXA**, na mesa de carteado do fundo (a mesa em `[-0.45,-5.375]`, onde estão os três jogadores). Zona de coleta proposta: `[-0.6,-3.95,2.4,0.45]`. É um caderno espiral com nomes de bares, valores e as iniciais "N.V.". A última linha diz: "SÁBADO — ESTRELA — CONTAGEM".
 - **Pista opcional: CELULAR DO RUSSO** (cai quando Russo morre). A última chamada é para "GRAVATA". Uma mensagem: "O DOUTOR DO TERNO QUER O GARÇOM SUMIDO DE VEZ."
@@ -638,17 +638,19 @@ A elite está tomada. Caio desmonta a narrativa (a TV), a origem (o Joá) e a f�
 
 ## 8. Cenas-chave
 
-### Abertura (usa o noticiário existente)
+### Abertura (flash-forward)
 
-O "Alerta Rio" passa como está: o plantão, o apresentador (que agora tem nome, **Jairo Trovão**), a CAM 03 com o fantasma atravessando o balcão às 23:47, a testemunha ("ELE PASSOU PELA PAREDE, MOÇO! TAVA TODO AZUL!"), o **Ten. Souza** e "NÃO SAI DE CASA!". A sala escura da TV é o **quarto de Caio**. Quando a TV desliga, entra um plano curto e novo (3 s, sem diálogo): no reflexo da tela apagada aparece Caio sentado na cama, ofegante, com a camisa branca furada e manchada. A mão dele **ainda está translúcida e ciano**, e volta ao normal enquanto ele olha. Ele pega o pano em cima do guarda-roupa, desenrola a katana e sai. Na tela, em VT323: **"26 DE OUTUBRO. CATORZE DIAS DEPOIS DO BECO."** Depois vem o briefing da fase 1.
+26 de outubro, 23:52. No quarto escuro, Caio assiste ao "Alerta Rio" sentado na cadeira da escrivaninha, de frente para a TV de tubo: o plantão, o apresentador **Jairo Trovão**, a CAM 03 com o fantasma atravessando o balcão às 21:52, a testemunha ("ELE PASSOU PELA PAREDE, MOÇO! TAVA TODO AZUL!"), o **Ten. Souza** ("SÃO OITO CORPOS LÁ DENTRO. NINGUÉM VIU O ATIRADOR.") e "NÃO SAI DE CASA!". A notícia é sobre ele. Quando a TV desliga, o vidro apagado reflete o Caio, ofegante; ele ergue a mão direita, que **ainda está translúcida e ciano**, e ela volta ao normal enquanto ele olha. Na tela, em VT323: **"26 DE OUTUBRO, 21:50. DUAS HORAS ANTES."** Depois vem o briefing da fase 1, que é o que a notícia contou.
 
-Assim, a CAM 03 deixa de ser só manchete: ela mostra **a descoberta involuntária do poder**, a primeira vez que ele atravessou alguma coisa, em pânico. A fase 1 é a volta, de propósito.
+Assim, a abertura mostra primeiro a consequência (a cidade falando de um fantasma, o homem sozinho com a mão brilhando) e a fase 1 mostra como aconteceu. A camisa furada e a katana enrolada no guarda-roupa ainda não estão na cena.
 
 ### Virada 1 → 2: "O Síndico agradece"
 
 Na oficina dos bondes, o Gravata morre com o celular na mão. A tela acende no chão, ao lado do sangue: **"O SÍNDICO AGRADECE OS SERVIÇOS. O IMÓVEL SERÁ REPASSADO."** Quando Caio sai pelo beco, as luzes do bonde 17, parado na plataforma, acendem sozinhas por um segundo e apagam. Não há explicação.
 
 No noticiário especial que se segue, o "Alerta Rio" mostra "AGIOTA DA LAPA ENCONTRADO MORTO EM OFICINA DE BONDES". Depois, pela primeira vez, entra uma entrevista coletiva de **Álvaro Castelar**: de terno claro, enquadrado da cintura para cima, ele diz *"Eu vou caçar esse fantasma e cada bandido dessa cidade. ORDEM NA CASA."* O letreiro: "BONDE DE SANTA TERESA VOLTA A CIRCULAR • FUNDAÇÃO PILAR ANUNCIA LEILÃO BENEFICENTE • ELEIÇÃO SUPLEMENTAR: CASTELAR LIDERA". No quarto, o computador liga, e a Celeste manda a imagem de uma câmera do IML: um corpo de saco aberto andando pelo corredor, sem sombra no piso branco.
+
+**No jogo** (`assets/news/virada_1_tv.json`): passa na TV do quarto, com o Caio na cadeira, como a abertura. Entre o estúdio e a coletiva entra um plano na oficina dos bondes: o Gravata sob o lençol, com o celular aceso, o perito ajoelhado e o Ten. Souza na fita ("TREZE MORTOS"; "E DE NOVO, MINHA GENTE: NINGUÉM VIU O ATIRADOR."). Depois do VOLTAMOS, o mesmo monitor vira o computador: LOKI, a página da MARÉ e a câmera 2 do IML (01/11, 03:12). A MARÉ escreve: "CÂMERA 2 DO IML. ONTEM, 03:12. ISSO SAIU DA GAVETA SOZINHO." e "OLHA O CHÃO DEBAIXO DELE. NÃO TEM SOMBRA.  — C."
 
 ### A fita da CAM 03 (meio do Ato 2)
 
@@ -680,7 +682,7 @@ Depois do corte de saída no heliponto, a casca vazia do Síndico cai sob as luz
 3. **Inimigos por ato:** a curva de `reaction` e de `pose` (sem `drink` no Ato 3) já é dado puro em `enemies`.
 4. **Nomes na abertura:** em `scripts/intro.gd`, em `SHOTS`, ponha "JAIRO TROVÃO" na legenda do apresentador e "TEN. ELIAS SOUZA — POLÍCIA MILITAR". Em `TICKER`, acrescente "BAR DO ARCO: DONO HOSPITALIZADO". As constantes já existem.
 5. **Textos do quarto** (`scripts/room.gd`):
-   - `HOTSPOTS`: "Hotspot_pc" passa a ser "MARÉ — LAPANET" e "Mensagens e encomendas".
+   - `HOTSPOTS`: "Hotspot_pc" passa a ser "MARÉ — LOKI" e "Mensagens e encomendas".
    - O painel `"pc"`: troque "COLETE IMPROVISADO" por "POCHETE DE PENTES" e "ESPECTRO +1 s" por "FÔLEGO I"; "PASSOS SILENCIOSOS" vira "SOLA DE BORRACHA".
    - As frases da arma em `WEAPONS`: "A pistola do Russo. Achei no beco."; "A doze do Seu Arlindo."; etc.
    - A linha "???" do painel do quadro: "05  ???  —  CAJU?".

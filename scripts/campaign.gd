@@ -13,7 +13,7 @@ const ORDERS := {
 	"back_sheath":{"title":"BAINHA NAS COSTAS","text":"Troca katana ↔ arma em 0,12 s (era 0,22 s).","cost":1,"after":4},
 	"suppressor":{"title":"SILENCIADOR","text":"Tiro de pistola alerta a 4 m (era 9,25 m).","cost":2,"after":4},
 	"mag_pouch":{"title":"POCHETE DE PENTES","text":"Recarga 20% mais rápida em todas as armas.","cost":1,"after":4}}
-## What Celeste (MARÉ on the LapaNet) writes on the computer: after that many nights cleared and,
+## What Celeste (MARÉ, on her .onion page, read in the LOKI browser) writes on the computer: after that many nights cleared and,
 ## for some, only if that clue was found. She first writes after the gafieira.
 const CELESTE := [
 	{"after":2,"text":"Vi a fita da CAM 03. Seu corpo estava frio na imagem. Eu conheço esse frio. — C."},

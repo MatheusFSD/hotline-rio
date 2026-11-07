@@ -3,6 +3,7 @@
 Imports build_environment.py as a kit for its PSX textures, materials and mesh helpers. Runs
 in its own headless Blender (see the bottom of this file). Writes assets/intro:
 - anchor.glb, witness.glb, cop.glb: PSX people rebound to the UAL rig with talking clips.
+- caio.glb: the hero, sitting, getting up and walking, for the room the newscast is watched in.
 - studio.glb: the fictional "Alerta Rio" police-news studio, built around the origin.
 - street.glb: police car, cones and tape in the bar's level coordinates, for the report.
 """
@@ -21,7 +22,9 @@ box,obox,cyl,text,floor_quad=kit.box,kit.obox,kit.cyl,kit.text,kit.floor_quad
 # ---------------------------------------------------------------- cast
 CAST=[('anchor','Male/Character_29','Character_29',['Idle_Talking_Loop','Walk_Formal_Loop','Spell_Simple_Shoot','Interact','Idle_Loop']),
     ('witness','Female/Character_29_Female','Character_29_Female',['Idle_Talking_Loop','Idle_Loop']),
-    ('cop','Male/Character_17_Police','Character_17_Police',['Idle_Loop','Idle_Talking_Loop'])]
+    ('cop','Male/Character_17_Police','Character_17_Police',['Idle_Loop','Idle_Talking_Loop']),
+    # Caio himself, in the shirt he died in, watching the news about himself from his desk chair.
+    ('caio','Male/Character_01','Character_01',['Sitting_Idle_Loop','Sitting_Exit','Walk_Loop','Idle_Loop'])]
 
 # Same Mixamo-to-UAL retarget as build_characters.py.
 mapping={'Hips':'pelvis','Spine':'spine_01','Spine1':'spine_02','Spine2':'spine_03','Neck':'neck_01','Head':'Head'}
@@ -39,7 +42,9 @@ def frame(head,tail):
     m=Matrix((x,y,z)).transposed().to_4x4(); m.translation=head
     return m
 
-def rebind(rig,actions,name,model,texture,clips):
+def rebind(rig,actions,name,model,texture,clips,scale=.36):
+    # `scale` brings the pack's units to the UAL rig's: .36 for the first pack, whose people are
+    # 4.4 m tall in their files; the later packs (Characters_psx_02, Extras) are near real size.
     before=set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=os.path.join(SOURCE,'Characters_psx/Models',model+'.fbx'))
     imported=set(bpy.data.objects)-before
@@ -57,14 +62,14 @@ def rebind(rig,actions,name,model,texture,clips):
         old=frame(oldrig.matrix_world@p.head,oldrig.matrix_world@p.tail)
         b=rig.data.bones[mapping[short]]
         new=frame(rig.matrix_world@b.head_local,rig.matrix_world@b.tail_local)
-        transformed[group.index]=new@Matrix.Scale(.36,4)@old.inverted()
+        transformed[group.index]=new@Matrix.Scale(scale,4)@old.inverted()
     world=mesh.matrix_world.copy()
     for v in data.vertices:
         original=world@v.co; total=0.; result=Vector()
         for index,weight in weights[v.index]:
             if index in transformed:
                 result+=(transformed[index]@original)*weight; total+=weight
-        v.co=result/total if total else original*.36
+        v.co=result/total if total else original*scale
     visual=bpy.data.objects.new(name,data); kit.scene.collection.objects.link(visual)
     visual.vertex_groups.clear()
     for group in mesh.vertex_groups:

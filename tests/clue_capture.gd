@@ -46,12 +46,15 @@ func capture() -> void:
 			root.add_child(room)
 			await save("room")
 			room.click("Hotspot_pc")
+			await create_timer(room.ZOOM_TIME+.3).timeout
 			await save("room_orders")
 			room._close()
+			await create_timer(room.LEAVE_TIME+.2).timeout
 			room.click("Hotspot_board")
 			await save("room_board")
 			room._close()
-			room.click("Weapon_rifle")
+			room._set_hovered("Weapon_smg")
+			room.tooltip.position = Vector2(300,300)
 			await save("room_arsenal")
 			room.queue_free()
 	# Every night made so far won: every clue on the board, then the last night's card.

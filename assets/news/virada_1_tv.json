@@ -1,0 +1,36 @@
+{
+  "_": "The special report closing Act 1 ('O Síndico agradece', docs/narrativa.md), watched on the TV in Caio's room. Same format as assets/intro/plantao.json; read by scripts/intro.gd and tools/build_intro_audio.py. After the VOLTAMOS the computer comes on by itself: MARÉ's page in LOKI, the IML's camera.",
+  "duration": 44.2,
+  "power_off": 43.0,
+  "sound": "res://assets/audio/intro/virada_1.ogg",
+  "bug": "PLANTÃO ESPECIAL",
+  "clock": "23:10",
+  "room": "campaign",
+  "shots": [
+    [0.0, "plantao", ""],
+    [3.2, "anchor_medium", "AGIOTA DA LAPA ENCONTRADO MORTO EM OFICINA DE BONDES"],
+    [9.0, "oficina", "SANTA TERESA: TREZE MORTOS NA ESTAÇÃO DOS BONDES"],
+    [15.0, "anchor_close", "ELEIÇÃO SUPLEMENTAR: CASTELAR LIDERA"],
+    [18.1, "press", "ÁLVARO CASTELAR — CANDIDATO AO GOVERNO"],
+    [22.3, "press_close", "CASTELAR PROMETE CAÇAR O \"FANTASMA DA LAPA\""],
+    [26.4, "outro", ""],
+    [28.6, "loki", ""]
+  ],
+  "speakers": {
+    "anchor": "JAIRO TROVÃO",
+    "castelar": "ÁLVARO CASTELAR",
+    "mare": "MARÉ"
+  },
+  "lines": [
+    [3.4, 5.8, "anchor", "BOA NOITE. PLANTÃO ESPECIAL DO ALERTA RIO."],
+    [5.8, 8.9, "anchor", "NESTOR VALADARES, O \"GRAVATA\", FOI ACHADO MORTO NA OFICINA DOS BONDES."],
+    [9.2, 11.9, "anchor", "A POLÍCIA FALA EM ACERTO DE CONTAS. TREZE MORTOS."],
+    [12.0, 14.8, "anchor", "E DE NOVO, MINHA GENTE: NINGUÉM VIU O ATIRADOR."],
+    [15.2, 17.9, "anchor", "MAS TEM GENTE QUE JÁ SABE O QUE FAZER COM ESSE FANTASMA."],
+    [18.4, 22.1, "castelar", "EU VOU CAÇAR ESSE FANTASMA E CADA BANDIDO DESSA CIDADE."],
+    [22.8, 25.6, "castelar", "ORDEM NA CASA."],
+    [30.0, 35.0, "mare", "CÂMERA 2 DO IML. ONTEM, 03:12. ISSO SAIU DA GAVETA SOZINHO."],
+    [35.4, 42.6, "mare", "OLHA O CHÃO DEBAIXO DELE. NÃO TEM SOMBRA.  — C."]
+  ],
+  "ticker": "BONDE DE SANTA TERESA VOLTA A CIRCULAR   •   FUNDAÇÃO PILAR ANUNCIA LEILÃO BENEFICENTE   •   ELEIÇÃO SUPLEMENTAR: CASTELAR LIDERA   •   "
+}

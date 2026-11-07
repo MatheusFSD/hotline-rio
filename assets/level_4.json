@@ -14,7 +14,7 @@
     {"id":"mapa_linha","r":[-5.0,-5.05,2.4,0.45],"title":"MAPA DA LINHA","text":"Cada lote vizinho ao trilho circulado em vermelho e etiquetado PILAR."},
     {"id":"pasta_armario","r":[11.45,2.9,0.55,1.5],"title":"PASTA DO ARMÁRIO","text":"CONTRATO DE ADMINISTRAÇÃO — CONDOMÍNIO. Assinado: E. Prates."}
   ],
-  "act_end": {"news":"res://assets/news/virada_1.json","place":"FIM DO ATO 1  /  A TAXA","title":"O SÍNDICO AGRADECE","body":"O Gravata morreu com o celular na mão.\nEle pagava aluguel a alguém. Alguém que chama gente de imóvel.","tip":"ATO 2  —  O CONDOMÍNIO","button":"CONTINUAR  →"},
+  "act_end": {"news":"res://assets/news/virada_1.json","broadcast":"res://assets/news/virada_1_tv.json","place":"FIM DO ATO 1  /  A TAXA","title":"O SÍNDICO AGRADECE","body":"O Gravata morreu com o celular na mão.\nEle pagava aluguel a alguém. Alguém que chama gente de imóvel.","tip":"ATO 2  —  O CONDOMÍNIO","button":"CONTINUAR  →"},
   "reward": {"id":"scanner","title":"RÁDIO-SCANNER","text":"O rádio do despacho, mexido para pegar as frequências da quadrilha."},
   "lamps": [
     [[-9.0,2.6,-2.4],"e8f2ff",1.2,6.5],

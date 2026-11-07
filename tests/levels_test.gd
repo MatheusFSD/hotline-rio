@@ -162,13 +162,13 @@ func run() -> void:
 			check(game.act_card.screen.title.text == "O SÍNDICO AGRADECE" and game.act_card.screen.tip.text.contains("ATO 2"),"The end of act 1 thanks him in the Síndico's name and names act 2")
 			game.act_card.confirmed.emit()
 			await process_frame
-			# Then the act's newscast, every segment on the tube, until it switches off.
-			check(game.news != null and game.news.data.segments.size() == 2,"The act's newscast comes on after the card")
+			# Then the act's special report, in 3D on the TV in his room, until it switches off.
+			check(game.news != null and game.news.get("plan") != null and game.news.plan.get("bug","") == "PLANTÃO ESPECIAL","The act's special report comes on after the card, on the TV in his room")
 			var shown := {}
 			while game.news and not game.news.done:
 				shown[game.news.headline.text] = true
 				game.news.advance(1.0/30)
-			check(shown.size() == 2 and shown.has("CASTELAR PROMETE CAÇAR O \"FANTASMA DA LAPA\""),"Both segments play: the loan shark found dead, Castelar's promise")
+			check(shown.has("AGIOTA DA LAPA ENCONTRADO MORTO EM OFICINA DE BONDES") and shown.has("CASTELAR PROMETE CAÇAR O \"FANTASMA DA LAPA\""),"It plays through: the loan shark found dead, Castelar's promise")
 			await process_frame
 		var next := (index+1)%EXPECT.size()
 		check(game.sim.level == next and game.actors.size() == EXPECT[next].enemies+1 and game.overlay_title.text == EXPECT[next].title,"%s: the next night is level %d" % [name,next+1])

@@ -356,12 +356,53 @@ def t_clues(x,y):
         if ly>=26: c=C('1a1a1a')
     return grain(c,x,y,.05,72)
 
+def t_lapa_night(x,y):
+    """The far view from the window, 96 x 64: night sky with the moon, the hill of Santa Teresa
+    pricked with house lights, the Arcos da Lapa lit white across it, the city low and warm below."""
+    c=mix(C('060a1c'),C('241d48'),min(1,y/40))
+    if y>34: c=mix(c,C('5a3240'),(y-34)/30)                    # sodium haze over the streets
+    if y<30 and hsh(x,y,81)>.985: c=C('aeb6e0')                 # a few stars
+    moon=math.hypot(x-76,y-11)
+    if moon<4.2: c=C('e6e2cc')
+    elif moon<7: c=mix(c,C('4a4a78'),(7-moon)/6)
+    ridge=31+5*math.sin(x*.075+.8)+2.5*math.sin(x*.23)
+    if y>ridge:
+        c=C('0c1020')
+        if hsh(x,y,82)>.94: c=C('ffcf7a') if hsh(x,y,83)>.3 else C('dfe6ff')
+    if 44<=y<55:                                              # the Arcos: deck, then arches on columns
+        col=x%8
+        opening=col>=2 and y>=47 and math.hypot(col-4.5,max(0,49-y))<2.6
+        c=C('120f1a') if opening else grain(C('d9cfb4'),x,y,.06,84)
+    if y>=55:
+        c=C('0b0b13')
+        if hsh(x,y,85)>.88: c=C('ffc860')
+    return c
+
+def t_facade_night(x,y):
+    """A sobrado across the street at night: dark plaster, tall windows, some lit, one with a TV."""
+    tx,ty=x%8,y%11
+    cell=hsh(x//8,y//11,86)
+    c=grain(C('2b2531'),x,y,.07,87)
+    if 2<=tx<6 and 1<=ty<8:
+        c=C('e8b25a') if cell>.62 else (C('5a78c8') if cell<.08 else C('15121c'))
+        if tx==4 or ty==4: c=mul(c,.55)                            # the window's own bars
+    if ty==9: c=C('1a161e')                                       # the balcony's shadow
+    return c
+
+def t_window_paint(x,y):
+    return grain(mix(C('2f4a3d'),C('3c5a4a'),vnoise(x,y,4,8,88)*.6),x,y,.06,89)
+
 def make_room_palette():
     for name,fn,w,h in [('gun_metal',t_gun_metal,16,16),('polymer',t_polymer,16,16),('olive',t_olive,16,16),
         ('cork',t_cork,32,32),('pegboard',t_pegboard,32,32),('keys',t_keys,32,16),('clues',t_clues,32*CELLS,32)]:
         kit.material(name,image=kit.texture(name,w,h,fn))
     kit.material('pc_screen',image=kit.texture('pc_screen',64,48,t_pc_screen),glow=1.6)
-    kit.material('night_city',image=kit.texture('night_city',64,48,intro.t_skyline),glow=1.4)
+    kit.material('lapa_night',image=kit.texture('lapa_night',96,64,t_lapa_night),glow=.9)
+    kit.material('facade_night',image=kit.texture('facade_night',32,33,t_facade_night),glow=.7)
+    kit.material('roof_night','1a1820')
+    kit.material('window_paint',image=kit.texture('window_paint',16,16,t_window_paint))
+    kit.material('reveal','cfc6b4'); kit.material('sill','d8d4ca')
+    kit.material('glass_pane','9fb8d8',alpha=.16)
     kit.material('beige','cfc6ae'); kit.material('yarn','c21a1a',emission='8a0c0c',strength=.6); kit.material('yarn_blue','2a6ad8',emission='0c3a8a',strength=.6)
     kit.material('pin_red','d42020'); kit.material('pin_yellow','e8c020'); kit.material('pin_blue','2050d0')
     kit.material('gun_wood_dark','5a3218')
@@ -558,9 +599,70 @@ def build_pc(desk_top):
     bx('beige',x+.3,x+.37,y-.42,y-.31,desk_top,desk_top+.03)          # mouse
     bake('Hotspot_pc')
 
+# The opening of the pack's window wall, measured on its vertices (Blender x and z), in the back wall.
+WIN_X=(.962,2.038)
+WIN_Z=(.864,2.176)
+
+SASH_OPEN=-1.25   # radians the casements swing out over the street on the last night, when he leaves by it (inward they would cut through the headboard)
+
+def sash(hinge,toward,width,zb,zt,face_y,angle):
+    """One casement of small panes, hinged on its outer stile at x = hinge and swung `angle` into the
+    room (a negative angle swings it out); `toward` is +1 when it closes to the right of its hinge, -1 to the left."""
+    def P(u,v,z):   # u across the sash from the hinge, v through its thickness from the room's face
+        c,s=math.cos(angle),math.sin(angle)
+        return (hinge+toward*(u*c+v*s),face_y-u*s+v*c,z)
+    def piece(mat,u0,u1,v0,v1,z0,z1):
+        corners=[P(u,v,z) for u in (u0,u1) for v in (v0,v1) for z in (z0,z1)]
+        centre=tuple(sum(p[i] for p in corners)/8 for i in range(3))
+        for quad_ in (((0,1,3,2)),((4,6,7,5)),((0,4,5,1)),((2,3,7,6)),((0,2,6,4)),((1,5,7,3))):
+            pts=[corners[i] for i in quad_]
+            mid=tuple(sum(p[i] for p in pts)/4 for i in range(3))
+            kit.face(mat,pts,.3,tuple(mid[i]-centre[i] for i in range(3)))
+    s_,m=.035,.022
+    piece('window_paint',0,s_,.01,.045,zb,zt); piece('window_paint',width-s_,width,.01,.045,zb,zt)
+    piece('window_paint',0,width,.01,.045,zb,zb+s_); piece('window_paint',0,width,.01,.045,zt-s_,zt)
+    piece('window_paint',width/2-m/2,width/2+m/2,.015,.04,zb,zt)
+    for k in (1,2):
+        h=zb+(zt-zb)*k/3
+        piece('window_paint',0,width,.015,.04,h-m/2,h+m/2)
+    pane=[P(0,.028,zb),P(width,.028,zb),P(width,.028,zt),P(0,.028,zt)]
+    kit.face('glass_pane',pane,.3,tuple(P(0,-1,zb)[i]-P(0,0,zb)[i] for i in range(3)))
+
 def build_window():
-    # Night skyline behind the back window, glowing through the frame.
-    quad('night_city',[(.2,BACK+.6,.2),(3.8,BACK+.6,.2),(3.8,BACK+.6,3.4),(.2,BACK+.6,3.4)],[(0,0),(1,0),(1,1),(0,1)],(0,-1,0))
+    """A real window in the opening: the wall's depth round it, a painted wooden frame with a
+    fanlight, two casements of small panes and a sill. The casements are two objects of their own,
+    shut (Sashes_closed) and swung open over the street (Sashes_open): the room shows the open pair on
+    the last night, when he leaves by the window. Behind it the night: the sobrados across the
+    street and, far off, Santa Teresa and the Arcos."""
+    x0,x1=WIN_X; z0,z1=WIN_Z; d=BACK+.16
+    # The wall's thickness, lining the opening.
+    bx('reveal',x0-.06,x0,BACK,d,z0-.06,z1+.06); bx('reveal',x1,x1+.06,BACK,d,z0-.06,z1+.06)
+    bx('reveal',x0,x1,BACK,d,z1,z1+.06); bx('reveal',x0,x1,BACK,d,z0-.06,z0)
+    # The frame and the fanlight over the casements.
+    fy0,fy1=BACK+.08,BACK+.13
+    t=.055; m=.022
+    for a,b in ((x0,x0+t),(x1-t,x1)): bx('window_paint',a,b,fy0,fy1,z0,z1)
+    for a,b in ((z0,z0+t),(z1-t,z1)): bx('window_paint',x0,x1,fy0,fy1,a,b)
+    fan=z1-.36
+    bx('window_paint',x0,x1,fy0,fy1,fan-.025,fan+.025)
+    for k in (1,2,3):
+        x=x0+t+(x1-x0-2*t)*k/4
+        bx('window_paint',x-m/2,x+m/2,fy0+.01,fy1-.01,fan,z1-t)
+    quad('glass_pane',[(x0,fy0+.02,fan),(x1,fy0+.02,fan),(x1,fy0+.02,z1),(x0,fy0+.02,z1)],[(0,0),(1,0),(1,1),(0,1)],(0,-1,0))
+    # The sill, inside the wall's depth: nothing stands out over the bed below it.
+    bx('sill',x0-.03,x1+.03,BACK-.015,BACK+.08,z0-.04,z0)
+    bake('Window')
+    width=(x1-x0)/2-t
+    for name,angle in (('Sashes_closed',0.0),('Sashes_open',SASH_OPEN)):
+        sash(x0+t,1,width,z0+t,fan-.025,fy0,angle)
+        sash(x1-t,-1,width,z0+t,fan-.025,fy0,angle)
+        bake(name)
+    # The night outside: three sobrados across the street, then the far view.
+    street=BACK+3.6
+    for a,b,top in ((-1.2,1.15,2.5),(1.15,2.45,.35),(2.45,4.6,3.2)):
+        bx('facade_night',a,b,street,street+4,-4,top,2.6)
+        bx('roof_night',a-.05,b+.05,street-.08,street+4,top,top+.12)
+    quad('lapa_night',[(-3.5,BACK+9,-1.5),(6.5,BACK+9,-1.5),(6.5,BACK+9,6),(-3.5,BACK+9,6)],[(0,0),(1,0),(1,1),(0,1)],(0,-1,0))
     bake('City')
 
 def build_room():
@@ -582,6 +684,8 @@ def build_room():
     # Single bed with the headboard against the back wall, under the window.
     bed=prop('props/bed3','Bed',(1.45,BACK-1.25,0),-math.pi/2)
     blo,bhi=bounds(bed)
+    # The mattress's top, not the headboard's: the highest point away from the back wall.
+    mattress=max(v.co.z for v in bed.data.vertices if v.co.y<bhi.y-.35)
     stand=prop('props/tableSmall2','Nightstand',(bhi.x+.38,BACK-.32,0),0,.75)
     slo,shi=bounds(stand)
     # Everything on the nightstand sits on its real top, inside its footprint.
@@ -597,8 +701,8 @@ def build_room():
     prop('props/painting3','Painting',(2.98,3.0,1.9),math.pi,anchor='center')
     model('Librero.001','Bookcase',(2.72,1.6,0),math.pi/2,height=1.55)
     # The mess of someone who lives alone and works nights.
-    prop('props/pizza','Pizza',(1.3,BACK-1.9,bhi.z-.08),.4,.8)
-    prop('props/remote','Remote',(1.75,BACK-1.4,bhi.z-.06),1.1)
+    prop('props/pizza','Pizza',(1.3,BACK-1.9,mattress),.4,.8)
+    prop('props/remote','Remote',(1.75,BACK-1.4,mattress),1.1)
     prop('props/cup3','Mug',(-1.1,BACK-.5,desk_top),0)
     prop('props/burger','Burger',(-.75,BACK-.75,desk_top),.6)
     prop('props/milkCarton','Milk',(-.62,BACK-.4,desk_top),.3)

@@ -1,0 +1,33 @@
+{
+  "_": "The opening newscast's running order, read by scripts/intro.gd (picture and subtitles) and tools/build_intro_audio.py (the sound, voices on the same seconds). Texts are Portuguese source lines, translated through assets/lang/<code>.json.",
+  "duration": 38.2,
+  "power_off": 31.0,
+  "after": {"_": "Seconds after the set goes off: his hand stops glowing by 'calm', the screen goes black for the card at 'black'.", "calm": 2.6, "black": 3.6},
+  "shots": [
+    [0.0, "plantao", ""],
+    [3.2, "anchor_medium", "PLANTÃO: TIROTEIO NA LAPA"],
+    [9.0, "anchor_close", "VIGILANTE FANTASMA ATERRORIZA A LAPA"],
+    [12.0, "cctv", "IMAGENS DA CÂMERA DE SEGURANÇA DO BAR"],
+    [17.0, "witness", "TESTEMUNHA: \"ELE PASSOU PELA PAREDE\""],
+    [20.5, "cop", "TEN. ELIAS SOUZA — POLÍCIA MILITAR"],
+    [23.5, "anchor_point", "8 HOMENS ARMADOS MORTOS NO BAR DO ARCO"],
+    [29.5, "outro", ""]
+  ],
+  "speakers": {
+    "anchor": "JAIRO TROVÃO",
+    "witness": "TESTEMUNHA",
+    "cop": "TEN. ELIAS SOUZA"
+  },
+  "lines": [
+    [3.4, 5.8, "anchor", "BOA NOITE! CORTA PRA MIM, CORTA PRA MIM!"],
+    [5.8, 9.0, "anchor", "OLHA O QUE TÁ ACONTECENDO AGORA NA LAPA, MINHA GENTE!"],
+    [9.1, 12.0, "anchor", "TESTEMUNHAS FALAM DE UM VIGILANTE FANTASMA!"],
+    [12.2, 14.6, "anchor", "OLHA A IMAGEM! OLHA A IMAGEM!"],
+    [14.6, 17.0, "anchor", "ELE ATRAVESSA O BALCÃO COMO SE NÃO FOSSE NADA!"],
+    [17.2, 20.4, "witness", "ELE PASSOU PELA PAREDE, MOÇO! TAVA TODO AZUL!"],
+    [20.7, 23.4, "cop", "ÁREA ISOLADA. SÃO OITO CORPOS LÁ DENTRO. NINGUÉM VIU O ATIRADOR."],
+    [23.7, 26.2, "anchor", "OITO BANDIDOS MORTOS NO BAR DO ARCO... E UM FANTASMA SOLTO NA LAPA!"],
+    [26.2, 29.4, "anchor", "VOCÊ QUE TÁ EM CASA: NÃO SAI DE CASA!"]
+  ],
+  "ticker": "PM CERCA BAR NA LAPA   •   BAR DO ARCO: DONO HOSPITALIZADO   •   MORADORES RELATAM \"HOMEM QUE ATRAVESSA PAREDE\"   •   RUA DO RIACHUELO INTERDITADA   •   BONDE DE SANTA TERESA SUSPENSO   •   "
+}

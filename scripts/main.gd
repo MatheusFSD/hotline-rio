@@ -602,9 +602,16 @@ func _leave_room() -> void:
 	if cinematics: Campaign.save()
 
 func _close_act() -> void:
-	## Past the act's card, its newscast (act_end "news") comes on before anything else.
+	## Past the act's card, its newscast comes on before anything else: watched on the TV in
+	## Caio's room when the act has one in 3D (act_end "broadcast", the opening's format), else the
+	## flat card (act_end "news").
 	act_card.queue_free()
 	act_card = null
+	if sim.layout.act_end.has("broadcast") and news == null:
+		news = Intro.new([],sim.layout.act_end.broadcast)
+		add_child(news)
+		news.finished.connect(_close_news,CONNECT_ONE_SHOT)
+		return
 	if sim.layout.act_end.has("news") and news == null:
 		news = NewsCard.new(NewsCard.load_news(sim.layout.act_end.news,int(Campaign.state.get("civilians_killed",0))))
 		add_child(news)
@@ -613,7 +620,7 @@ func _close_act() -> void:
 	_after_act()
 
 func _close_news() -> void:
-	news.queue_free()
+	if is_instance_valid(news): news.queue_free()
 	news = null
 	_after_act()
 

@@ -266,14 +266,14 @@ As quatro fases contam o Ato 1 de [docs/narrativa.md](docs/narrativa.md). Caio B
 - **Abertura:**
   - o "Alerta Rio" ganhou os nomes do elenco: "COM JAIRO TROVÃO" no selo e "TEN. ELIAS SOUZA";
   - o letreiro ganhou "BAR DO ARCO: DONO HOSPITALIZADO";
-  - quando a TV desliga, uma cartela digita "26 DE OUTUBRO. / CATORZE DIAS DEPOIS DO BECO." antes do briefing da fase 1.
+  - o telejornal é um flash-forward: quando a TV desliga, uma cartela digita "26 DE OUTUBRO, 21:50. / DUAS HORAS ANTES." e a fase 1 é o tiroteio de que a notícia falava.
 - **Quarto:**
   - **Armas:** as frases do arsenal contam a história ("A pistola do Russo. Achei no chão do beco.").
   - **Celeste:** escreve no computador a partir da segunda noite (MARÉ), com mensagens que dependem das noites vencidas e das pistas opcionais (`Campaign.CELESTE`).
   - **Quadro 3D:** ganha um cartão por pista achada, com alfinete e fio até o cartão relacionado. O caderno da Iara usa o primeiro fio azul, o do Avesso; o celular do Gravata traz junto um bilhete rosa "?" (o Síndico). Cada pista é um objeto `Clue_<id>` em `room.glb` (`CLUE_CARDS` em `tools/build_room.py`), e o quarto mostra só os achados. O atlas de cartões passou de 8 para 16 células.
   - **Próximo destino:** a última linha do painel do quadro vem da pista mais recente que aponta para algum lugar (campo `lead`). Depois da fase 4: "05 ??? — CARGA DE QUINTA — CAJU?".
 - **Fim do ato** (campo `act_end` da fase 4): depois do quarto da estação, a tela da missão sobre fundo preto diz "FIM DO ATO 1 / A TAXA", "O SÍNDICO AGRADECE" e "ATO 2 — O CONDOMÍNIO · EM BREVE" (`scripts/act_card.gd`). Num lançamento real, depois vem o noticiário e então o menu, e CARREGAR JOGO recomeça na fase 1 com tudo o que foi conquistado.
-- **Noticiário da virada** (campo `act_end.news`): um **esboço 2D**, à espera da versão 3D, em `scripts/news_card.gd`. Usa o grafismo do "Alerta Rio" da abertura (selo, AO VIVO, tarja, letreiro e legendas) sobre planos pintados, num tubo com o shader CRT, que liga e desliga. Os dados vêm de `assets/news/virada_1.json`: relógio, selo, letreiro e segmentos (plano, quem fala, manchete, legenda, duração). Assim a versão 3D poderá ler o mesmo arquivo. Na virada 1 → 2, Jairo dá "AGIOTA DA LAPA ENCONTRADO MORTO EM OFICINA DE BONDES", e Castelar promete "ORDEM NA CASA". Enter pula. `tests/news_capture.gd` grava os dois segmentos em `.qa/news`.
+- **Noticiário da virada** (campo `act_end.broadcast`): a virada 1 → 2 já é 3D, na TV do quarto (veja [Plantão especial do Ato 1](#plantão-especial-do-ato-1)). As outras viradas e os finais (campo `act_end.news`) ainda são o **esboço 2D** de `scripts/news_card.gd`. Usa o grafismo do "Alerta Rio" da abertura (selo, AO VIVO, tarja, letreiro e legendas) sobre planos pintados, num tubo com o shader CRT, que liga e desliga. Os dados vêm de `assets/news/virada_1.json`: relógio, selo, letreiro e segmentos (plano, quem fala, manchete, legenda, duração). Assim a versão 3D poderá ler o mesmo arquivo. Na virada 1 → 2, Jairo dá "AGIOTA DA LAPA ENCONTRADO MORTO EM OFICINA DE BONDES", e Castelar promete "ORDEM NA CASA". Enter pula. `tests/news_capture.gd` grava os dois segmentos em `.qa/news`.
 
 Ficam para depois: a textura do herói com a mancha de sangue do Ato 1 e o quarto bagunçado do Ato 1.
 
@@ -588,25 +588,76 @@ Para mexer: `blender -b --factory-startup --python tools/build_music_lapa.py`; o
 
 Ao iniciar o jogo, uma TV de tubo numa sala escura liga e mostra o "Alerta Rio", um plantão policial fictício no estilo dos programas policiais da TV aberta (cerca de 32 s). Enter, qualquer tecla ou clique desliga a TV. Um segundo toque sai na hora.
 
-A TV tem gabinete, moldura, botões de canal e volume, alto-falante, luz de power e antena com palha de aço. O filtro de tubo deixa a tela curva e acrescenta scanlines, máscara RGB, cor vazando, imagem fantasma, barra rolante, chuvisco nos cortes e o efeito de ligar e desligar.
+**Onde se assiste:** no quarto do Caio (`assets/room/room.glb`), à noite, na TV de tubo da escrivaninha, a mesma que depois serve de computador. Ela vem do "Models pack psx" (`tools/source/room`), como no quarto. O telejornal passa no mesmo vidro onde depois aparece o site da MARÉ (a superfície `pc_screen`):
+- **O quarto em 26 de outubro:** só a pistola do beco na parede, janela fechada; a luz é a da tela, na cor de cada plano (vermelho no PLANTÃO, verde na câmera de segurança, azul na rua), mais o luar da janela. A TV não é iluminada pela própria tela.
+- **O Caio:** sentado na cadeira da escrivaninha, de frente para a TV, assistindo à notícia sobre ele mesmo (`assets/intro/caio.glb`, o herói com as animações de sentar do UAL1, gerado por `build_intro.py`). A cadeira do quarto é puxada para baixo dele.
+- **A imagem:** o telejornal é renderizado em 640×480 e passa pelo filtro de tubo numa segunda SubViewport; o resultado é a textura do vidro (`shaders/tv_glass.gdshader`). O filtro deixa a tela curva e acrescenta scanlines, máscara RGB, cor vazando, imagem fantasma, barra rolante, chuvisco nos cortes e o efeito de ligar e desligar.
+- **A câmera:** começa na vista normal do quarto, com o Caio de costas, e entre 3,0 s e 4,1 s passa pelo ombro esquerdo dele até ficar de frente para o vidro, com a imagem ocupando dois terços da altura; depois se aproxima devagar até a TV desligar.
+- **O reflexo:** quando a TV desliga, a câmera chega mais perto do vidro escuro, que reflete o Caio. É uma câmera espelhada pelo plano do vidro, com um frustum fora do eixo do tamanho exato da tela, renderizada só nesse trecho. Ele está ofegante e ergue a mão direita sobre a escrivaninha (`TwoBoneIK3D` no braço, `LookAtModifier3D` na cabeça). A mão ainda brilha ciano, resto do Avesso, e o brilho apaga enquanto ele olha. Corta para a cartela.
+- **A cartela:** "26 DE OUTUBRO, 21:50. / DUAS HORAS ANTES." O telejornal é um flash-forward: a fase 1 é o tiroteio no bar de que ele falava, e por isso a CAM 03 marca 21:52, as notícias falam de "8 HOMENS ARMADOS MORTOS" e o tenente, de "OITO CORPOS LÁ DENTRO. NINGUÉM VIU O ATIRADOR". Os tempos estão em `plantao.json` ("after").
 
 O telejornal é 3D, renderizado em 640×480:
 1. **Vinheta de PLANTÃO:** o apresentador entra no estúdio. O estúdio tem telão curvo com sirene, skyline do Rio e mosaico de câmeras, bancada com logo e treliça de luz.
 2. **Apresentador falando:** planos médios e closes com zoom nervoso.
-3. **Câmera de segurança do bar:** o fantasma atravessa o balcão e a parede.
+3. **Câmera de segurança do bar:** o fantasma atravessa o balcão e a parede. Nas fases, as paredes do bar são cortadas a 1,4 m para o jogo ser visto de cima; para as câmeras do telejornal, `assets/intro/bar_shell.glb` (`tools/build_intro_bar.py`) fecha o bar de novo: paredes até o teto, vergas sobre as portas, forro com luminárias, platibanda e cornija na fachada, letreiro sobre a porta e o varal de lâmpadas subido para baixo dele. Só a abertura carrega esse arquivo.
 4. **Testemunha:** rosto em mosaico, com a viatura piscando ao fundo.
 5. **Tenente na fita de isolamento.**
 6. **Close final:** o apresentador aponta para a câmera ("NÃO SAI DE CASA!").
 7. **"VOLTAMOS A QUALQUER MOMENTO".**
 
-Logo, tarja, relógio, "AO VIVO" e letreiro rolante completam o visual. Como não há áudio, as falas aparecem como legenda oculta.
+Logo, tarja, relógio, "AO VIVO" e letreiro rolante completam o visual.
+
+**Roteiro único.** `assets/intro/plantao.json` guarda a ordem dos planos, as manchetes, o letreiro, as falas (início, fim, quem fala e o texto) e o nome de cada falante. A cena e o som leem o mesmo arquivo, então mudar um tempo ali muda os dois; depois disso, gere o som de novo.
+
+**Legendas.** Ficam fora da TV, embaixo da imagem: o nome de quem fala em amarelo (JAIRO TROVÃO, TESTEMUNHA, TEN. ELIAS SOUZA) e a fala em branco. Texto e nome passam por `tr()`, com as traduções em `assets/lang/en.json` como o resto do jogo; uma língua nova só precisa das mesmas chaves. A tarja, o letreiro e o selo dentro da TV também são traduzidos.
+
+**Som.** `tools/build_intro_audio.py` sintetiza tudo, sem gravações, em `assets/audio/intro`:
+- `plantao.ogg`: o som da TV do clique de ligar até ela desligar, saindo do alto-falante dela. Tem o estalo e o desmagnetizador, o chiado do tubo esquentando, a vinheta do PLANTÃO (três ataques de metais subindo e o acorde sobre rufar de tímpano) e a trilha tensa sob o estúdio, mais baixa sob a câmera de segurança. Tem também o chuvisco em cada corte, a rua (sirene passando, curiosos atrás da fita, rádio da polícia), o golpe de orquestra no zoom de "8 homens armados mortos" e a vinheta do VOLTAMOS.
+- `tv_off.ogg`: o tubo se fechando num ponto e estalando ao esfriar.
+- `room.ogg`: o quarto em loop, com trânsito ao longe, grilos e geladeira.
+- `after.ogg`: depois que a TV desliga, a respiração ofegante dele, acalmando enquanto o brilho sai da mão.
+
+O som segue o relógio da cena: se o jogo engasgar, ele é reposicionado. Pular desliga a TV na hora, com o som de desligar.
+
+**Falas inventadas.** Ninguém na TV fala uma língua. Como no The Sims, cada um fala sílabas sem sentido com o ritmo e a melodia da legenda:
+- cada palavra em português vira uma palavra inventada com o mesmo número de sílabas, e sempre a mesma ("CORTA PRA MIM" duas vezes soa igual duas vezes);
+- a sílaba tônica fica onde o português a põe, as vírgulas e pontos viram respiros, exclamações sobem e afirmações descem;
+- a voz é síntese de formantes: um zumbido de cordas vocais filtrado por quatro ressonâncias que deslizam de vogal em vogal, ruído para s, ch, f e o estalo das consoantes;
+- o apresentador grita, a testemunha fala ofegante e mais aguda, o tenente lê uma nota sem emoção;
+- cada fala começa junto com a legenda e cabe no tempo dela.
 
 Os personagens usam modelos dos pacotes PSX fornecidos, adaptados ao rig UAL com as animações de fala, caminhada e gesto:
 - apresentador: `Character_29`, com gravata vermelha presa ao osso do peito;
 - testemunha: `Character_29_Female`;
 - policial: `Character_17_Police`.
 
-Os arquivos ficam em `assets/intro`. Estúdio, viatura, cones e fita são gerados por `tools/build_intro.py`, que reaproveita as texturas e a geometria de `build_environment.py`. A abertura só toca no lançamento real do jogo; os testes que instanciam a cena diretamente não a exibem.
+Os arquivos ficam em `assets/intro`. Estúdio, viatura, cones e fita são gerados por `tools/build_intro.py`, que reaproveita as texturas e a geometria de `build_environment.py`; o bar fechado, por `tools/build_intro_bar.py`. A abertura só toca no lançamento real do jogo; os testes que instanciam a cena diretamente não a exibem.
+
+## Plantão especial do Ato 1
+
+Depois do cartão "O SÍNDICO AGRADECE" (fim da fase 4), o noticiário especial passa na mesma TV do quarto da abertura, com o Caio na cadeira, o quarto como a campanha está (armas conquistadas na parede, pistas no quadro) e a mesma câmera que vai até a tela. Ele vem de `assets/news/virada_1_tv.json`, no formato do `plantao.json`, e é tocado por `scripts/intro.gd`, que agora toca qualquer programa nesse formato: cada um diz os planos que usa e só os cenários desses planos são montados. O campo `act_end.broadcast` da fase aponta o programa; sem ele, vale o esboço 2D do `act_end.news`.
+
+1. **PLANTÃO** e **Jairo Trovão** no estúdio, com o selo "PLANTÃO ESPECIAL" e o relógio 23:10: "AGIOTA DA LAPA ENCONTRADO MORTO EM OFICINA DE BONDES".
+2. **Oficina dos bondes, à noite:** fachada de tijolo com a porta em arco, o bonde 17 nos trilhos, a viatura piscando, cones e fita. O corpo do Gravata está sob um lençol, com o sangue e o celular ainda aceso. O perito está ajoelhado ao lado e o **Ten. Souza** fala na fita. Tarja: "TREZE MORTOS NA ESTAÇÃO DOS BONDES".
+3. **Coletiva de Álvaro Castelar:** a parede azul de "ORDEM NA CASA", o púlpito com os microfones das emissoras, os flashes. Ele usa o terno claro da bíblia e é **sempre enquadrado da cintura para cima**, para o chão nunca mostrar que não tem sombra. No close, aponta para as câmeras: "ORDEM NA CASA."
+4. **VOLTAMOS**, e então **o computador liga sozinho**. O vidro mostra o LOKI e a página da MARÉ com a **câmera 2 do IML**, de 01/11 às 03:12: um homem sai andando pelo corredor das gavetas, passa pela gaveta aberta e pela maca com o saco aberto e vazio, e para debaixo da câmera, olhando para ela. As luminárias do teto fazem sombra (a bandeja, a maca); ele não faz nenhuma. A MARÉ digita: "OLHA O CHÃO DEBAIXO DELE. NÃO TEM SOMBRA.  — C."
+
+**Elenco, dos pacotes PSX:**
+- **Castelar:** `Character_Male_40`, com o terno azul-marinho recolorido para claro por `build_virada.py`. O rosto parece mais novo que 71 anos, e isso combina com um Inquilino que não envelhece.
+- **O corpo do IML:** `Character_Male_56`, com o andar de zumbi do UAL2.
+- **O perito:** `Character_26_Doctor`, com o `Fixing_Kneeling` do UAL1.
+
+Esses pacotes estão em tamanho real nos arquivos (1,69 m), ao contrário do primeiro (4,38 m). Por isso o `rebind` de `build_intro.py` ganhou o parâmetro `scale`, que no elenco antigo continua 0,36. `build_virada.py` também mapeia todos os dedos, porque esses modelos estão em pose A.
+
+Arquivos em `assets/news/virada_1` (`castelar.glb`, `cadaver.glb`, `perito.glb`, `press.glb`, `oficina.glb`, `iml.glb`), gerados por `tools/build_virada.py`. O som, `assets/audio/intro/virada_1.ogg`, sai do mesmo `build_intro_audio.py`, que monta a trilha de cada programa pelos tipos de plano:
+- **Estúdio:** a trilha tensa.
+- **Rua:** sirene, curiosos e rádio.
+- **Coletiva:** obturadores, murmúrio e aplausos no "ORDEM NA CASA".
+- **Computador:** o bipe de ligar, o disco e a MARÉ digitando.
+
+O Castelar tem voz própria: grave, lenta, segura. As legendas (JAIRO TROVÃO, ÁLVARO CASTELAR, MARÉ) passam por `tr()` como as da abertura.
+
+Teste: `tests/virada_test.gd` (23 verificações: cenários e elenco, quarto da campanha, legendas e traduções, Castelar nunca com o chão no quadro, LOKI só no fim, o corpo sem sombra, e o fim do Ato 1 tocando o programa em 3D). `tests/virada_capture.gd` grava cada plano, na TV e na imagem crua, em `.qa/virada`.
 
 **O mundo responde.** `tools/build_sfx_world.py` sintetiza os sons menores, sem gravações, e `scripts/sound_board.gd` acerta os volumes: bala na parede (os sete bagos de uma escopeta valem um som só, e a bala do inimigo soa mais baixa), cápsula do protagonista caindo cerca de 0,6 s depois do tiro, passos alternados a cada 1,45 m (em modo espectro não há passos), troca entre katana e arma, o disjuntor, a câmera quebrando, a bala em madeira, em metal, em estofado ou em planta, o vidro trincando e o alerta de quem vê o protagonista (um toque só, mesmo que a sala inteira o veja).
 
@@ -736,9 +787,10 @@ Sair do bar, ou morrer (depois da sequência de zoom e câmera lenta), abre uma 
 
 Depois de cada noite vencida, o botão "IR PRO QUARTO" (ou Enter) leva ao apartamento do protagonista na Rua do Lavradio. É uma cena 3D com câmera parada e point-and-click, renderizada em 640×400 com filtro nearest, iluminada pelo abajur, pela luminária, pela tela do CRT e pelo luar da janela, com o skyline do Rio. Passar o mouse sobre um objeto clicável faz ele brilhar e mostra uma etiqueta:
 
-- **Computador:** as encomendas da Celeste, pagas com favores (veja [Campanha](#campanha-pistas-e-upgrades)). Cada uma mostra o custo e o botão PEDIR, CHEGOU ou EM BREVE.
-- **Estante de armas:** pistola, submetralhadora, escopeta, fuzil e minigun. Só as conquistadas na história podem ser equipadas; as outras aparecem como "???" e BLOQUEADA, inclusive na etiqueta do mouse. Clicar numa arma abre o arsenal nela; "EQUIPAR" coloca a arma na mão para a próxima noite. Os números do arsenal já incluem as encomendas (pente, recarga). O topo do quarto mostra a arma equipada.
+- **Computador:** um clique leva a câmera até o monitor em 1,5 s; ao chegar, o tubo acende e mostra a página da MARÉ na dark web, um endereço .onion aberto no navegador **LOKI**. As encomendas da Celeste, pagas com favores (veja [Campanha](#campanha-pistas-e-upgrades)), aparecem em cartões, cada uma com seu modelo 3D PSX girando, o custo e o botão PEDIR, CHEGOU ou EM BREVE; passar o mouse num cartão mostra na barra de status o que a encomenda faz. Ao lado ficam os favores e, embaixo, as duas últimas mensagens da MARÉ. A página é uma cena 2D desenhada no próprio vidro do monitor (a superfície `pc_screen` do quarto), e o clique no vidro é levado até ela; enquanto a tela está aberta o quarto é renderizado no dobro da resolução, para o texto ficar legível. O X da janela, Esc ou um clique fora do monitor voltam a câmera em 0,8 s.
+- **Estante de armas:** pistola, submetralhadora, escopeta, fuzil e minigun. Só ficam na parede as já conquistadas; as outras nem aparecem. Com o mouse em cima, a etiqueta mostra nome, tiros por minuto, pente, recarga (e chumbos, na escopeta), a frase da arma e se ela está na mão; um clique a leva para a próxima noite, sem painel, e ela fica com um brilho verde fraco. Os números já incluem as encomendas (pente, recarga). O topo do quarto mostra a arma equipada.
 - **Quadro de investigação:** cada missão com seu estado e as pistas dela, com título e texto, ou "???" enquanto não forem achadas. O quadro em 3D tem recortes de jornal, fotos, a polaroide do fantasma, fichas, mapa da Lapa, post-its, alfinetes e fios de lã vermelha.
+- **Janela:** sobre a cama, com batente, caixilho de madeira verde com duas folhas de vidraças pequenas, bandeira e peitoril; lá fora, sobrados com janelas acesas e, ao fundo, Santa Teresa, a lua e os Arcos. No quarto do final, de onde ele pode ir embora pela janela, as folhas ficam abertas para a rua (`Sashes_open` em vez de `Sashes_closed`, em `tools/build_room.py`).
 - **Relatório da noite:** no topo, à direita, as pistas fotografadas, os favores ganhos e o que a noite desbloqueou.
 - **Porta, "PRÓXIMA NOITE" ou Enter:** começa a noite seguinte.
 
@@ -747,6 +799,7 @@ O quarto é gerado por `tools/build_room.py` pelo Blender MCP:
 - **Modelados com o kit PSX do projeto:** a estante de armas, as cinco armas, o quadro, o gabinete, o teclado e a tela do PC.
 - **Clique:** os objetos clicáveis se chamam `Hotspot_*` e `Weapon_*`, e o clique é testado nos triângulos de cada um.
 - **Arquivo:** o resultado fica em `assets/room/room.glb`.
+- **Encomendas:** `tools/build_shop.py` modela as cinco no mesmo kit PSX (carregador com extensão, tênis de sola de borracha, katana na bainha com alça, silenciador e pochete com dois pentes) e grava cada uma em `assets/shop/<encomenda>.glb`.
 
 ## Controles
 
@@ -865,7 +918,12 @@ A abertura não passa pelo MCP. Exportar personagens com esqueleto a partir de u
 
 ```powershell
 & "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup --python 'godot 3d/tools/build_intro.py'
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup --python 'godot 3d/tools/build_intro_bar.py'
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup --python 'godot 3d/tools/build_virada.py'
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup --python 'godot 3d/tools/build_intro_audio.py'
 ```
+
+`build_intro_bar.py` e `build_intro_audio.py` não precisam dos pacotes de personagens; o som leva cerca de 1 min. `build_virada.py` precisa dos FBX de `Character_Male_40`, `Character_Male_56` e `Character_26_Doctor` (pasta `Rig` do `Characters_psx_02`) copiados para `tools/source/Characters_psx/Models/Male`, e das texturas deles em `Textures`.
 
 Os clipes das armas longas seguem o mesmo caminho pelo mesmo motivo. As poses foram ajustadas pelo MCP, chamando `Poser.pose()` na cena ativa do Blender aberto; a exportação roda headless. O script lê `assets/characters/hero.glb` e `assets/weapons/weapons.json`, então rode depois de `build_room.py` se as armas mudarem:
 
@@ -927,7 +985,7 @@ godot --headless --path . --script res://tests/feel_test.gd
 
 `tests/room_capture.gd` grava o quarto, um objeto em destaque e o painel do arsenal em `.qa/`. `tests/weapons_capture.gd` grava as cinco armas na mão e um disparo de escopeta.
 
-`tests/intro_capture.gd` grava um quadro de cada plano da abertura em `.qa/`.
+`tests/intro_capture.gd` grava um quadro de cada plano da abertura, como aparece na TV da sala, em `.qa/`.
 
 O teste de partida completa usa somente os controles de movimento, mira, tiro e espectro, com as regras normais e os oito inimigos originais. Os testes de animação conferem pesos distribuídos pelo corpo, escolha de caminhada/corrida e cadência, ciclos para trás derivados dos originais, mira durante o recuo, movimentos dos ossos, recarga em movimento, pausa e queda ao chão. Os testes de efeitos verificam colisão dos rastros, sangue, clarão, cápsulas, pausa, limpeza e limites de recursos. Os testes de desmembramento verificam as seis regiões dos três modelos, captura de geometria texturizada, distribuição aleatória, restauração, assentamento no chão e preservação dos quadros e do relógio de `Death01`. `tests/capture.gd`, `tests/effects_capture.gd`, `tests/gore_capture.gd` e `tests/phase_capture.gd` capturam o jogo com renderização real para inspeção visual; requerem interface gráfica.
 
